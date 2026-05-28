@@ -32,6 +32,7 @@ import Eval.ANFInterpreter (ANFValue (..), evalANF)
 import Eval.Interpreter (RuntimeError (..), Value (..), eval, evalProgram, renderRuntimeError, renderValue)
 import qualified Haskell2010.Core.FreeVars as H2010CoreFreeVars
 import qualified Haskell2010.Core.Eval as H2010CoreEval
+import qualified Haskell2010.Core.Facts as H2010CoreFacts
 import qualified Haskell2010.Core.Pretty as H2010CorePretty
 import qualified Haskell2010.Core.Subst as H2010CoreSubst
 import qualified Haskell2010.Core.Syntax as H2010Core
@@ -397,6 +398,10 @@ testGroups =
       [ pureTest "folds safe Core-0 arithmetic with provenance" testHaskell2010CoreEgglogFoldsArithmetic
       , pureTest "folds Bool case over known constructor" testHaskell2010CoreEgglogFoldsKnownBoolCase
       , pureTest "folds case over known ADT constructor" testHaskell2010CoreEgglogFoldsKnownConstructorCase
+      , pureTest "tracks totality and no-error Core facts" testHaskell2010CoreFactsTotalityNoError
+      , pureTest "tracks lazy demand and lambda strictness facts" testHaskell2010CoreFactsDemandStrictness
+      , pureTest "tracks demanded constructor-field facts" testHaskell2010CoreFactsConstructorFieldDemand
+      , pureTest "exposes Core facts through Egglog results" testHaskell2010CoreEgglogExposesFacts
       , pureTest "preserves lazy constructor field semantics" testHaskell2010CoreEgglogPreservesKnownConstructorLaziness
       , pureTest "preserves lazy let semantics through optimized Core and STG" testHaskell2010CoreEgglogPreservesLazyLet
       , pureTest "does not erase strict bottom dependencies" testHaskell2010CoreEgglogPreservesStrictBottom
@@ -5072,6 +5077,160 @@ testHaskell2010CoreEgglogFoldsKnownConstructorCase = do
     "optimized known constructor STG oracle"
     7
     =<< evalSTGBinding "main" stgProgram
+
+testHaskell2010CoreFactsTotalityNoError :: Either String ()
+testHaskell2010CoreFactsTotalityNoError = do
+  let safeDiv =
+        H2010Core.CPrimOp
+          H2010Core.PrimDiv
+          [coreInt 6, coreInt 2]
+          H2010Core.intTy
+      badDiv =
+        H2010Core.CPrimOp
+          H2010Core.PrimDiv
+          [coreInt 1, coreInt 0]
+          H2010Core.intTy
+      adtTy = H2010Core.CTyCon (coreTypeName "FactADT" 6302)
+      adtConstructor = coreConstructorName "FactADT" 6303
+      unsupportedEq =
+        H2010Core.CPrimOp
+          H2010Core.PrimEq
+          [H2010Core.CCon adtConstructor adtTy, H2010Core.CCon adtConstructor adtTy]
+          H2010Core.boolTy
+      letName = coreTerm "x" 6300
+      letBinder = coreBinder letName H2010Core.intTy
+      lazyLet =
+        H2010Core.CLet
+          (H2010Core.CoreNonRec letBinder badDiv)
+          (coreInt 5)
+          H2010Core.intTy
+      forcedLet =
+        H2010Core.CLet
+          (H2010Core.CoreNonRec letBinder badDiv)
+          (H2010Core.CPrimOp H2010Core.PrimAdd [H2010Core.CVar letName H2010Core.intTy, coreInt 1] H2010Core.intTy)
+          H2010Core.intTy
+      facts expression =
+        H2010CoreFacts.analyzeCoreExpr H2010CoreValidate.defaultValidationEnv Map.empty expression
+      safeFacts = facts safeDiv
+      badFacts = facts badDiv
+      unsupportedEqFacts = facts unsupportedEq
+      lazyFacts = facts lazyLet
+      forcedFacts = facts forcedLet
+  assertBool "safe constant division is total" (H2010CoreFacts.coreExprIsTotal safeFacts)
+  assertBool "safe constant division has no runtime error" (H2010CoreFacts.coreExprHasNoRuntimeError safeFacts)
+  assertBool "division by zero is not total" (not (H2010CoreFacts.coreExprIsTotal badFacts))
+  assertBool "division by zero may raise runtime error" (not (H2010CoreFacts.coreExprHasNoRuntimeError badFacts))
+  assertBool "unsupported ADT primitive equality is not proven no-error" (not (H2010CoreFacts.coreExprHasNoRuntimeError unsupportedEqFacts))
+  assertBool "undemanded bad let RHS remains total" (H2010CoreFacts.coreExprIsTotal lazyFacts)
+  assertBool "undemanded bad let RHS has no runtime error" (H2010CoreFacts.coreExprHasNoRuntimeError lazyFacts)
+  assertBool "demanded bad let RHS is not total" (not (H2010CoreFacts.coreExprIsTotal forcedFacts))
+  assertBool "demanded bad let RHS may raise runtime error" (not (H2010CoreFacts.coreExprHasNoRuntimeError forcedFacts))
+
+testHaskell2010CoreFactsDemandStrictness :: Either String ()
+testHaskell2010CoreFactsDemandStrictness = do
+  let strictName = coreTerm "x" 6310
+      yName = coreTerm "y" 6311
+      xBinder = coreBinder strictName H2010Core.intTy
+      yBinder = coreBinder yName H2010Core.intTy
+      strictLambda =
+        H2010Core.CLam
+          xBinder
+          (H2010Core.CPrimOp H2010Core.PrimAdd [H2010Core.CVar strictName H2010Core.intTy, coreInt 1] H2010Core.intTy)
+          (H2010Core.funTy H2010Core.intTy H2010Core.intTy)
+      lazyLambda =
+        H2010Core.CLam
+          yBinder
+          (coreInt 5)
+          (H2010Core.funTy H2010Core.intTy H2010Core.intTy)
+      appliedStrict =
+        H2010Core.CApp strictLambda (coreInt 41) H2010Core.intTy
+      strictFacts =
+        H2010CoreFacts.analyzeCoreExpr H2010CoreValidate.defaultValidationEnv Map.empty strictLambda
+      lazyFacts =
+        H2010CoreFacts.analyzeCoreExpr H2010CoreValidate.defaultValidationEnv Map.empty lazyLambda
+      appliedFacts =
+        H2010CoreFacts.analyzeCoreExpr H2010CoreValidate.defaultValidationEnv Map.empty appliedStrict
+  assertBool "lambda body marks demanded parameter strict" (strictName `Set.member` H2010CoreFacts.coreFactStrictBinders strictFacts)
+  assertBool "unused lambda parameter is not strict" (not (yName `Set.member` H2010CoreFacts.coreFactStrictBinders lazyFacts))
+  assertBool "strict lambda application is total for total argument" (H2010CoreFacts.coreExprIsTotal appliedFacts)
+  assertBool "strict lambda application has no runtime error for safe arithmetic" (H2010CoreFacts.coreExprHasNoRuntimeError appliedFacts)
+
+testHaskell2010CoreFactsConstructorFieldDemand :: Either String ()
+testHaskell2010CoreFactsConstructorFieldDemand = do
+  let pairTyName = coreTypeName "Pair" 6320
+      pairConName = coreConstructorName "Pair" 6321
+      pairTy = H2010Core.CTyCon pairTyName
+      pairConTy = H2010Core.funTy H2010Core.intTy (H2010Core.funTy H2010Core.intTy pairTy)
+      pairInfo =
+        H2010Core.CoreConstructorInfo
+          { H2010Core.constructorTyVars = []
+          , H2010Core.constructorFields = [H2010Core.intTy, H2010Core.intTy]
+          , H2010Core.constructorResult = pairTy
+          , H2010Core.constructorRepresentation = H2010Core.CoreDataConstructor
+          }
+      validationEnv =
+        H2010CoreValidate.defaultValidationEnv
+          { H2010CoreValidate.coreConstructorTypes =
+              Map.insert pairConName pairInfo (H2010CoreValidate.coreConstructorTypes H2010CoreValidate.defaultValidationEnv)
+          }
+      firstName = coreTerm "first" 6322
+      secondName = coreTerm "second" 6323
+      caseName = coreTerm "$case" 6324
+      firstBinder = coreBinder firstName H2010Core.intTy
+      secondBinder = coreBinder secondName H2010Core.intTy
+      caseBinder = coreBinder caseName pairTy
+      badDiv = H2010Core.CPrimOp H2010Core.PrimDiv [coreInt 1, coreInt 0] H2010Core.intTy
+      pair first second =
+        H2010Core.CApp
+          (H2010Core.CApp (H2010Core.CCon pairConName pairConTy) first (H2010Core.funTy H2010Core.intTy pairTy))
+          second
+          pairTy
+      selectSecond =
+        H2010Core.CCase
+          (pair badDiv (coreInt 5))
+          caseBinder
+          [ H2010Core.CoreAlt
+              (H2010Core.ConstructorAlt pairConName)
+              [firstBinder, secondBinder]
+              (H2010Core.CVar secondName H2010Core.intTy)
+          ]
+          H2010Core.intTy
+      selectFirst =
+        H2010Core.CCase
+          (pair badDiv (coreInt 5))
+          caseBinder
+          [ H2010Core.CoreAlt
+              (H2010Core.ConstructorAlt pairConName)
+              [firstBinder, secondBinder]
+              (H2010Core.CVar firstName H2010Core.intTy)
+          ]
+          H2010Core.intTy
+      secondFacts = H2010CoreFacts.analyzeCoreExpr validationEnv Map.empty selectSecond
+      firstFacts = H2010CoreFacts.analyzeCoreExpr validationEnv Map.empty selectFirst
+      demandedFields facts =
+        Map.findWithDefault Set.empty pairConName (H2010CoreFacts.coreFactDemandedFields facts)
+  assertBool "unused bottom field does not break totality" (H2010CoreFacts.coreExprIsTotal secondFacts)
+  assertBool "unused bottom field does not raise runtime error" (H2010CoreFacts.coreExprHasNoRuntimeError secondFacts)
+  expectEqual "second field demand" (Set.singleton 1) (demandedFields secondFacts)
+  assertBool "forced bottom field is not total" (not (H2010CoreFacts.coreExprIsTotal firstFacts))
+  assertBool "forced bottom field may raise runtime error" (not (H2010CoreFacts.coreExprHasNoRuntimeError firstFacts))
+  expectEqual "first field demand" (Set.singleton 0) (demandedFields firstFacts)
+
+testHaskell2010CoreEgglogExposesFacts :: Either String ()
+testHaskell2010CoreEgglogExposesFacts = do
+  result <- optimizeHaskell2010CoreModule haskell2010PrimitiveArithmeticCoreModule
+  originalFacts <- lookupFacts "main" (H2010CoreEgglog.coreEgglogOriginalFacts result)
+  optimizedFacts <- lookupFacts "main" (H2010CoreEgglog.coreEgglogOptimizedFacts result)
+  assertBool "original arithmetic facts are total" (H2010CoreFacts.coreExprIsTotal originalFacts)
+  assertBool "original arithmetic facts have no runtime error" (H2010CoreFacts.coreExprHasNoRuntimeError originalFacts)
+  assertBool "optimized arithmetic facts are total" (H2010CoreFacts.coreExprIsTotal optimizedFacts)
+  assertBool "optimized arithmetic facts have no runtime error" (H2010CoreFacts.coreExprHasNoRuntimeError optimizedFacts)
+ where
+  lookupFacts occurrence moduleFacts =
+    case [facts | (name, facts) <- Map.toList (H2010CoreFacts.coreModuleBindingFacts moduleFacts), H2010Names.nameOcc name == occurrence] of
+      [facts] -> Right facts
+      [] -> Left ("missing facts for binding " <> Text.unpack occurrence)
+      _ -> Left ("ambiguous facts for binding " <> Text.unpack occurrence)
 
 testHaskell2010CoreEgglogPreservesKnownConstructorLaziness :: Either String ()
 testHaskell2010CoreEgglogPreservesKnownConstructorLaziness = do
@@ -10558,6 +10717,14 @@ expectSTGIO label expected = \case
 coreTerm :: Text -> Int -> H2010Names.RName
 coreTerm occurrence uniqueId =
   H2010Names.RName H2010Names.TermNamespace occurrence uniqueId False
+
+coreConstructorName :: Text -> Int -> H2010Names.RName
+coreConstructorName occurrence uniqueId =
+  H2010Names.RName H2010Names.ConstructorNamespace occurrence uniqueId False
+
+coreTypeName :: Text -> Int -> H2010Names.RName
+coreTypeName occurrence uniqueId =
+  H2010Names.RName H2010Names.TypeNamespace occurrence uniqueId False
 
 coreBinder :: H2010Names.RName -> H2010Core.CoreType -> H2010Core.CoreBinder
 coreBinder =

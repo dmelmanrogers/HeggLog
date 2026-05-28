@@ -30,10 +30,28 @@ lazy semantics and bottom behavior.
 
 The implemented first slice reuses the typed ANF Egglog schema for safe
 Core-0 fragments and translates extracted ANF representatives back into typed
-Core. The full Core-native schema is still planned for broader Haskell 2010
-features.
+Core. `Haskell2010.Core.Facts` now computes conservative lazy-Core fact
+metadata for the adapter and for future Core-native equality saturation. The
+full Core-native schema is still planned for broader Haskell 2010 features.
 
-Planned full Core sorts and facts:
+Implemented Core fact metadata:
+
+- known constants
+- known constructors
+- totality
+- no-error
+- demanded names
+- demanded constructor fields
+- lambda strictness
+
+These facts are conservative: an expression is marked total or no-error only
+when the analyzer can prove the evaluated path terminates without runtime
+failure. Lazy `let` RHSs and constructor fields are not charged to totality or
+no-error unless demanded by a selected case branch, primitive operation, or
+strict function body. IO and foreign-call boundaries remain may-error and
+non-total.
+
+Planned full Core-native Egglog sorts and facts:
 
 - `CoreExpr`
 - `CoreType`

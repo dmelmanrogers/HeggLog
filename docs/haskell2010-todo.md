@@ -17360,7 +17360,7 @@ Notes:
 ## EGG-CORE-005 — Core totality facts
 
 Status:
-- not started
+- complete
 
 Category:
 - egglog
@@ -17388,7 +17388,7 @@ Files likely touched:
 - `test/haskell2010/conformance/egglog/`
 
 Acceptance criteria:
-- Core totality facts is implemented, completed, or explicitly documented according to status `not started`.
+- Core totality facts is implemented, completed, or explicitly documented according to status `complete`.
 - All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
 - The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
 
@@ -17404,11 +17404,12 @@ Documentation updates:
 
 Notes:
 - Milestone M16 (Egglog Core optimizer). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete: `Haskell2010.Core.Facts` computes conservative lazy-Core totality facts for expressions and module bindings. The analyzer does not mark lazy `let` RHSs, constructor fields, IO boundaries, foreign calls, partial pattern paths, or unsafe primitive paths as total unless the evaluated path is proven safe.
 
 ## EGG-CORE-006 — no-error facts
 
 Status:
-- not started
+- complete
 
 Category:
 - egglog
@@ -17436,7 +17437,7 @@ Files likely touched:
 - `test/haskell2010/conformance/egglog/`
 
 Acceptance criteria:
-- no-error facts is implemented, completed, or explicitly documented according to status `not started`.
+- no-error facts is implemented, completed, or explicitly documented according to status `complete`.
 - All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
 - The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
 
@@ -17452,6 +17453,7 @@ Documentation updates:
 
 Notes:
 - Milestone M16 (Egglog Core optimizer). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete: `Haskell2010.Core.Facts` distinguishes no-error expressions from may-error expressions, including guarded handling for division/remainder, checked integer operations, pattern-match coverage, foreign calls, and IO failure boundaries.
 
 ## EGG-CORE-007 — known constant facts
 
@@ -17552,7 +17554,7 @@ Notes:
 ## EGG-CORE-009 — demand facts
 
 Status:
-- not started
+- complete
 
 Category:
 - egglog
@@ -17580,7 +17582,7 @@ Files likely touched:
 - `test/haskell2010/conformance/egglog/`
 
 Acceptance criteria:
-- demand facts is implemented, completed, or explicitly documented according to status `not started`.
+- demand facts is implemented, completed, or explicitly documented according to status `complete`.
 - All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
 - The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
 
@@ -17596,11 +17598,12 @@ Documentation updates:
 
 Notes:
 - Milestone M16 (Egglog Core optimizer). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete: `Haskell2010.Core.Facts` tracks demanded names and demanded constructor-field indices across selected known-constructor cases, general case alternatives, primitive evaluation, applications, and lazy bindings so optimizer decisions can avoid erasing required bottoms.
 
 ## EGG-CORE-010 — strictness facts
 
 Status:
-- not started
+- complete
 
 Category:
 - egglog
@@ -17628,7 +17631,7 @@ Files likely touched:
 - `test/haskell2010/conformance/egglog/`
 
 Acceptance criteria:
-- strictness facts is implemented, completed, or explicitly documented according to status `not started`.
+- strictness facts is implemented, completed, or explicitly documented according to status `complete`.
 - All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
 - The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
 
@@ -17644,6 +17647,7 @@ Documentation updates:
 
 Notes:
 - Milestone M16 (Egglog Core optimizer). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete: `Haskell2010.Core.Facts` records lambda binders and binding dependencies proven strict by body demand, while keeping unused arguments and constructor fields lazy.
 
 ## EGG-CORE-011 — dictionary-known facts
 

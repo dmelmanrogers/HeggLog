@@ -139,11 +139,12 @@ the Haskell 2010 optimizer strategy. The future optimizer will operate over
 typed Core, not directly over Haskell source syntax and not over the current
 strict ANF representation.
 
-The Haskell 2010 Core optimizer must preserve lazy semantics and bottom. That
-requires facts and guards such as totality, no-error, nonzero, no-overflow,
-known-constructor, demand, and strictness facts. Rewrites such as `x * 0 -> 0`,
-`if c then a else a -> a`, and `x / x -> 1` are unsafe without guards because
-they can erase bottom or runtime errors.
+The Haskell 2010 Core optimizer must preserve lazy semantics and bottom. It now
+computes conservative Core facts in `Haskell2010.Core.Facts` for totality,
+no-error, known constants/constructors, demanded names, demanded constructor
+fields, and lambda strictness. Rewrites such as `x * 0 -> 0`, `if c then a else
+a -> a`, and `x / x -> 1` are unsafe without those guards because they can
+erase bottom or runtime errors.
 
 Extraction from Egglog must produce typed Core, run the Core validator, preserve
 types, avoid unbound variables, preserve bottom/error behavior, and emit

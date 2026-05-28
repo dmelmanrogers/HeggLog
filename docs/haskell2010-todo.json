@@ -9666,7 +9666,7 @@
     {
       "id": "EGG-CORE-005",
       "title": "Core totality facts",
-      "status": "not started",
+      "status": "complete",
       "category": "egglog",
       "depends_on": [
         "CORE-010"
@@ -9674,7 +9674,7 @@
       "blocks": [],
       "milestone": "M16",
       "acceptance_criteria": [
-        "Core totality facts is implemented, completed, or explicitly documented according to status `not started`.",
+        "Core totality facts is implemented, completed, or explicitly documented according to status `complete`.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
@@ -9692,7 +9692,7 @@
     {
       "id": "EGG-CORE-006",
       "title": "no-error facts",
-      "status": "not started",
+      "status": "complete",
       "category": "egglog",
       "depends_on": [
         "CORE-010"
@@ -9700,7 +9700,7 @@
       "blocks": [],
       "milestone": "M16",
       "acceptance_criteria": [
-        "no-error facts is implemented, completed, or explicitly documented according to status `not started`.",
+        "no-error facts is implemented, completed, or explicitly documented according to status `complete`.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
@@ -9770,7 +9770,7 @@
     {
       "id": "EGG-CORE-009",
       "title": "demand facts",
-      "status": "not started",
+      "status": "complete",
       "category": "egglog",
       "depends_on": [
         "CORE-010"
@@ -9778,7 +9778,7 @@
       "blocks": [],
       "milestone": "M16",
       "acceptance_criteria": [
-        "demand facts is implemented, completed, or explicitly documented according to status `not started`.",
+        "demand facts is implemented, completed, or explicitly documented according to status `complete`.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
@@ -9796,7 +9796,7 @@
     {
       "id": "EGG-CORE-010",
       "title": "strictness facts",
-      "status": "not started",
+      "status": "complete",
       "category": "egglog",
       "depends_on": [
         "CORE-010"
@@ -9804,7 +9804,7 @@
       "blocks": [],
       "milestone": "M16",
       "acceptance_criteria": [
-        "strictness facts is implemented, completed, or explicitly documented according to status `not started`.",
+        "strictness facts is implemented, completed, or explicitly documented according to status `complete`.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],

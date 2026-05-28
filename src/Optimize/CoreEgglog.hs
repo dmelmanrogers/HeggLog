@@ -15,6 +15,7 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import Egglog.Eval (RunConfig)
 import Egglog.Sort (renderFunctionName)
+import qualified Haskell2010.Core.Facts as CoreFacts
 import Haskell2010.Core.FreeVars (freeVarsExpr)
 import Haskell2010.Core.Pretty (renderCoreExpr, renderCoreType)
 import Haskell2010.Core.Subst (substExpr)
@@ -29,6 +30,8 @@ import Syntax.AST (BinOp (..), Name (..), Type (..))
 data CoreEgglogResult = CoreEgglogResult
   { coreEgglogOriginalModule :: CoreModule
   , coreEgglogOptimizedModule :: CoreModule
+  , coreEgglogOriginalFacts :: CoreFacts.CoreModuleFacts
+  , coreEgglogOptimizedFacts :: CoreFacts.CoreModuleFacts
   , coreEgglogOriginalCost :: Int
   , coreEgglogOptimizedCost :: Int
   , coreEgglogAppliedRules :: [Text]
@@ -112,6 +115,7 @@ optimizeCoreModuleWithEgglogMode strict config coreModule = do
           , optimizeStrict = strict
           }
       moduleScope = scopeFromBinds (coreModuleBinds coreModule)
+      originalFacts = CoreFacts.analyzeCoreModule coreModule
   (optimizedBinds, finalState) <-
     runStateT (traverse (optimizeBind config validationEnv moduleScope) (coreModuleBinds coreModule)) initialState
   let optimizedModule = coreModule {coreModuleBinds = optimizedBinds}
@@ -122,6 +126,8 @@ optimizeCoreModuleWithEgglogMode strict config coreModule = do
         CoreEgglogResult
           { coreEgglogOriginalModule = coreModule
           , coreEgglogOptimizedModule = optimizedModule
+          , coreEgglogOriginalFacts = originalFacts
+          , coreEgglogOptimizedFacts = CoreFacts.analyzeCoreModule optimizedModule
           , coreEgglogOriginalCost = moduleCost coreModule
           , coreEgglogOptimizedCost = moduleCost optimizedModule
           , coreEgglogAppliedRules = uniqueTexts (optimizeAppliedRules finalState)

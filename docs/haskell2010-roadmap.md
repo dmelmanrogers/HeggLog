@@ -457,9 +457,11 @@ reports provenance, preserves laziness/bottom by skipping unsafe fragments, and
 is checked against Core, STG, and optimized/unoptimized native execution. The
 optimizer also folds known literal cases and saturated known-constructor cases
 for ADT/list/tuple/dictionary-shaped Core, including constructor-field
-projection with tests for unused lazy fields and forced field bottom. Broader
-dictionary simplification, strictness, and full Core-native equality-saturation
-facts remain part of the full Phase 15 expansion.
+projection with tests for unused lazy fields and forced field bottom. The Core
+fact analyzer now tracks conservative totality, no-error, demand, demanded
+constructor fields, and lambda strictness facts. Broader dictionary
+simplification and full Core-native equality-saturation remain part of the full
+Phase 15 expansion.
 
 Deliverables:
 
