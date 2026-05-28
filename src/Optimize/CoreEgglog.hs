@@ -8,6 +8,7 @@ module Optimize.CoreEgglog
   )
 where
 
+import Control.Monad (foldM)
 import Control.Monad.State.Strict (StateT, evalStateT, get, lift, modify', runStateT)
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
@@ -93,6 +94,30 @@ data KnownCaseScrutinee
   | KnownCaseLiteral Literal
   deriving stock (Show, Eq)
 
+data DictionarySelector = DictionarySelector
+  { dictionarySelectorName :: RName
+  , dictionarySelectorConstructor :: RName
+  , dictionarySelectorFieldIndex :: Int
+  }
+  deriving stock (Show, Eq, Ord)
+
+data KnownDictionaryValue = KnownDictionaryValue
+  { knownDictionaryValueConstructor :: RName
+  , knownDictionaryValueFields :: [CoreExpr]
+  }
+  deriving stock (Show, Eq, Ord)
+
+data DictionaryRewriteEnv = DictionaryRewriteEnv
+  { dictionaryRewriteFacts :: Map.Map RName CoreFacts.CoreExprFacts
+  , dictionaryRewriteSelectors :: Map.Map RName DictionarySelector
+  , dictionaryRewriteDictionaries :: Map.Map RName KnownDictionaryValue
+  }
+  deriving stock (Show, Eq)
+
+coreBetaInlineCostLimit :: Int
+coreBetaInlineCostLimit =
+  32
+
 optimizeCoreModuleWithEgglog :: RunConfig -> CoreModule -> Either CoreEgglogError CoreEgglogResult
 optimizeCoreModuleWithEgglog =
   optimizeCoreModuleWithEgglogMode False
@@ -116,8 +141,9 @@ optimizeCoreModuleWithEgglogMode strict config coreModule = do
           }
       moduleScope = scopeFromBinds (coreModuleBinds coreModule)
       originalFacts = CoreFacts.analyzeCoreModule coreModule
+      dictionaryEnv = buildDictionaryRewriteEnv originalFacts coreModule
   (optimizedBinds, finalState) <-
-    runStateT (traverse (optimizeBind config validationEnv moduleScope) (coreModuleBinds coreModule)) initialState
+    runStateT (traverse (optimizeBind config validationEnv dictionaryEnv moduleScope) (coreModuleBinds coreModule)) initialState
   let optimizedModule = coreModule {coreModuleBinds = optimizedBinds}
   case CoreValidate.validateModule (CoreValidate.moduleValidationEnv optimizedModule) optimizedModule of
     Left errors -> Left (CoreEgglogInvalidOutput errors)
@@ -134,21 +160,21 @@ optimizeCoreModuleWithEgglogMode strict config coreModule = do
           , coreEgglogProvenanceTrace = optimizeProvenance finalState
           }
 
-optimizeBind :: RunConfig -> CoreValidate.CoreValidationEnv -> Map.Map RName CoreType -> CoreBind -> OptimizeM CoreBind
-optimizeBind config validationEnv env = \case
+optimizeBind :: RunConfig -> CoreValidate.CoreValidationEnv -> DictionaryRewriteEnv -> Map.Map RName CoreType -> CoreBind -> OptimizeM CoreBind
+optimizeBind config validationEnv dictionaryEnv env = \case
   CoreNonRec binder rhs -> do
-    optimized <- optimizeExpr config validationEnv env rhs
+    optimized <- optimizeExpr config validationEnv dictionaryEnv env rhs
     pure (CoreNonRec binder optimized)
   CoreRec pairs -> do
     let recEnv = Map.union (Map.fromList [(coreBinderName binder, coreBinderType binder) | (binder, _) <- pairs]) env
     CoreRec <$> traverse (optimizePair recEnv) pairs
  where
   optimizePair recEnv (binder, rhs) = do
-    optimized <- optimizeExpr config validationEnv recEnv rhs
+    optimized <- optimizeExpr config validationEnv dictionaryEnv recEnv rhs
     pure (binder, optimized)
 
-optimizeExpr :: RunConfig -> CoreValidate.CoreValidationEnv -> Map.Map RName CoreType -> CoreExpr -> OptimizeM CoreExpr
-optimizeExpr config validationEnv env expression = do
+optimizeExpr :: RunConfig -> CoreValidate.CoreValidationEnv -> DictionaryRewriteEnv -> Map.Map RName CoreType -> CoreExpr -> OptimizeM CoreExpr
+optimizeExpr config validationEnv dictionaryEnv env expression = do
   rebuilt <-
     case expression of
       CVar {} ->
@@ -158,37 +184,459 @@ optimizeExpr config validationEnv env expression = do
       CCon {} ->
         pure expression
       CSpanned sourceRange inner ->
-        CSpanned sourceRange <$> optimizeExpr config validationEnv env inner
+        CSpanned sourceRange <$> optimizeExpr config validationEnv dictionaryEnv env inner
       CLam binder body ty ->
-        CLam binder <$> optimizeExpr config validationEnv (Map.insert (coreBinderName binder) (coreBinderType binder) env) body <*> pure ty
+        CLam binder <$> optimizeExpr config validationEnv dictionaryEnv (Map.insert (coreBinderName binder) (coreBinderType binder) env) body <*> pure ty
       CApp fn arg ty ->
-        CApp <$> optimizeExpr config validationEnv env fn <*> optimizeExpr config validationEnv env arg <*> pure ty
+        CApp <$> optimizeExpr config validationEnv dictionaryEnv env fn <*> optimizeExpr config validationEnv dictionaryEnv env arg <*> pure ty
       CTypeLam variables body ty ->
-        CTypeLam variables <$> optimizeExpr config validationEnv env body <*> pure ty
+        CTypeLam variables <$> optimizeExpr config validationEnv dictionaryEnv env body <*> pure ty
       CTypeApp fn arguments ty ->
-        CTypeApp <$> optimizeExpr config validationEnv env fn <*> pure arguments <*> pure ty
+        CTypeApp <$> optimizeExpr config validationEnv dictionaryEnv env fn <*> pure arguments <*> pure ty
       CLet bind body ty -> do
-        optimizedBind <- optimizeBind config validationEnv env bind
+        optimizedBind <- optimizeBind config validationEnv dictionaryEnv env bind
         let env' = Map.union (scopeFromBind optimizedBind) env
-        CLet optimizedBind <$> optimizeExpr config validationEnv env' body <*> pure ty
+        CLet optimizedBind <$> optimizeExpr config validationEnv dictionaryEnv env' body <*> pure ty
       CCase scrutinee binder alternatives ty -> do
-        optimizedScrutinee <- optimizeExpr config validationEnv env scrutinee
+        optimizedScrutinee <- optimizeExpr config validationEnv dictionaryEnv env scrutinee
         let altEnvBase = Map.insert (coreBinderName binder) (coreBinderType binder) env
         optimizedAlts <- traverse (optimizeAlt altEnvBase) alternatives
         pure (CCase optimizedScrutinee binder optimizedAlts ty)
       CCoerce inner ty ->
-        CCoerce <$> optimizeExpr config validationEnv env inner <*> pure ty
+        CCoerce <$> optimizeExpr config validationEnv dictionaryEnv env inner <*> pure ty
       CPrimOp op arguments ty ->
-        CPrimOp op <$> traverse (optimizeExpr config validationEnv env) arguments <*> pure ty
+        CPrimOp op <$> traverse (optimizeExpr config validationEnv dictionaryEnv env) arguments <*> pure ty
       CForeignCall foreignImport arguments ty ->
-        CForeignCall foreignImport <$> traverse (optimizeExpr config validationEnv env) arguments <*> pure ty
+        CForeignCall foreignImport <$> traverse (optimizeExpr config validationEnv dictionaryEnv env) arguments <*> pure ty
       CForeignImportValue {} ->
         pure expression
-  tryEgglogRewrite config env rebuilt >>= tryKnownCaseRewrite validationEnv env
+  dictionarySimplified <- tryDictionaryRewrite validationEnv dictionaryEnv env rebuilt
+  betaSimplified <- tryBetaRewrite validationEnv dictionaryEnv env dictionarySimplified
+  tryEgglogRewrite config env betaSimplified >>= tryKnownCaseRewrite validationEnv env
  where
   optimizeAlt altEnvBase (CoreAlt altCon binders body) = do
     let altEnv = Map.union (Map.fromList [(coreBinderName binder, coreBinderType binder) | binder <- binders]) altEnvBase
-    CoreAlt altCon binders <$> optimizeExpr config validationEnv altEnv body
+    CoreAlt altCon binders <$> optimizeExpr config validationEnv dictionaryEnv altEnv body
+
+tryDictionaryRewrite :: CoreValidate.CoreValidationEnv -> DictionaryRewriteEnv -> Map.Map RName CoreType -> CoreExpr -> OptimizeM CoreExpr
+tryDictionaryRewrite validationEnv dictionaryEnv env expression =
+  case selectKnownDictionaryField validationEnv dictionaryEnv expression of
+    Just selected -> do
+      let originalCost = expressionCost expression
+      case boundedExpressionCost (originalCost - 1) selected of
+        Just selectedCost -> do
+          validateOptimizedExpr validationEnv env selected
+          recordCoreRewrite "core-dictionary-select-known" expression selected originalCost selectedCost
+          pure selected
+        Nothing ->
+          pure expression
+    Nothing ->
+      pure expression
+
+selectKnownDictionaryField :: CoreValidate.CoreValidationEnv -> DictionaryRewriteEnv -> CoreExpr -> Maybe CoreExpr
+selectKnownDictionaryField validationEnv dictionaryEnv expression =
+  case expression of
+    CApp selectorExpr dictionaryArg resultTy -> do
+      selectorName <- selectorFunctionName selectorExpr
+      selector <- Map.lookup selectorName (dictionaryRewriteSelectors dictionaryEnv)
+      dictionary <- knownDictionaryArgument dictionaryArg
+      dictionaryValue <- knownDictionaryValue dictionaryArg dictionary
+      selected <- atMay (knownDictionaryValueFields dictionaryValue) (dictionarySelectorFieldIndex selector)
+      if dictionarySelectorConstructor selector == CoreFacts.coreKnownDictionaryConstructor dictionary
+        && knownDictionaryValueConstructor dictionaryValue == CoreFacts.coreKnownDictionaryConstructor dictionary
+        && exprType selected == resultTy
+        then Just selected
+        else Nothing
+    _ ->
+      Nothing
+ where
+  knownDictionaryArgument argument =
+    CoreFacts.coreFactKnownDictionary $
+      CoreFacts.analyzeCoreExpr validationEnv (dictionaryRewriteFacts dictionaryEnv) argument
+  knownDictionaryValue argument dictionary =
+    case CoreFacts.coreKnownDictionaryIdentity dictionary of
+      Just identity ->
+        Map.lookup identity (dictionaryRewriteDictionaries dictionaryEnv)
+      Nothing -> do
+        (constructorName, fields) <- peelConstructorApplication argument []
+        if constructorName == CoreFacts.coreKnownDictionaryConstructor dictionary
+          && map exprType fields == CoreFacts.coreKnownDictionaryFieldTypes dictionary
+          then
+            Just
+              KnownDictionaryValue
+                { knownDictionaryValueConstructor = constructorName
+                , knownDictionaryValueFields = fields
+                }
+          else Nothing
+
+tryBetaRewrite :: CoreValidate.CoreValidationEnv -> DictionaryRewriteEnv -> Map.Map RName CoreType -> CoreExpr -> OptimizeM CoreExpr
+tryBetaRewrite validationEnv dictionaryEnv env expression =
+  case expression of
+    CApp function argument resultTy
+      | Just selected <- selectKnownDictionaryField validationEnv dictionaryEnv function
+      , Just (binder, body) <- lambdaExpression selected
+      , Just selectedCost <- boundedExpressionCost coreBetaInlineCostLimit selected
+      , shouldBetaReduce (coreBinderName binder) argument body ->
+          do
+            freshBody <- freshenBetaBody body
+            let candidate = substExpr (coreBinderName binder) argument freshBody
+                originalCost = expressionCost expression
+                candidateCost = expressionCost candidate
+            if exprType candidate == resultTy && candidateCost <= originalCost
+              then do
+                validateOptimizedExpr validationEnv env candidate
+                recordCoreRewrite "core-dictionary-select-known" function selected (expressionCost function) selectedCost
+                recordCoreRewrite "core-beta-known-lambda" expression candidate originalCost candidateCost
+                pure candidate
+              else pure expression
+    CApp function argument resultTy
+      | Just (binder, body) <- lambdaExpression function
+      , Just _ <- boundedExpressionCost coreBetaInlineCostLimit function
+      , shouldBetaReduce (coreBinderName binder) argument body ->
+          do
+            freshBody <- freshenBetaBody body
+            let candidate = substExpr (coreBinderName binder) argument freshBody
+                originalCost = expressionCost expression
+                candidateCost = expressionCost candidate
+            if exprType candidate == resultTy && candidateCost < originalCost
+              then do
+                validateOptimizedExpr validationEnv env candidate
+                recordCoreRewrite "core-beta-known-lambda" expression candidate originalCost candidateCost
+                pure candidate
+              else pure expression
+    _ ->
+      pure expression
+
+freshenBetaBody :: CoreExpr -> OptimizeM CoreExpr
+freshenBetaBody body = do
+  state <- get
+  let (freshBody, nextUnique) = freshenCoreExprBinders (optimizeNextUnique state) body
+  modify' (\current -> current {optimizeNextUnique = max (optimizeNextUnique current) nextUnique})
+  pure freshBody
+
+freshenCoreExprBinders :: Int -> CoreExpr -> (CoreExpr, Int)
+freshenCoreExprBinders initialSupply expression =
+  go Map.empty initialSupply expression
+ where
+  renameName renames name =
+    Map.findWithDefault name name renames
+
+  freshenBinder supply binder =
+    let oldName = coreBinderName binder
+        freshName = oldName {nameUnique = supply, nameExternal = False}
+     in (binder {coreBinderName = freshName}, freshName, supply + 1)
+
+  freshenBinders renames supply binders =
+    foldl
+      ( \(freshened, currentRenames, currentSupply) binder ->
+          let (freshBinder, freshName, nextSupply) = freshenBinder currentSupply binder
+           in (freshened <> [freshBinder], Map.insert (coreBinderName binder) freshName currentRenames, nextSupply)
+      )
+      ([], renames, supply)
+      binders
+
+  go renames supply = \case
+    CVar name ty ->
+      (CVar (renameName renames name) ty, supply)
+    expression'@CLit {} ->
+      (expression', supply)
+    expression'@CCon {} ->
+      (expression', supply)
+    CSpanned sourceRange inner ->
+      let (inner', supply') = go renames supply inner
+       in (CSpanned sourceRange inner', supply')
+    CLam binder body ty ->
+      let (freshBinder, freshName, supplyAfterBinder) = freshenBinder supply binder
+          (body', supplyAfterBody) =
+            go (Map.insert (coreBinderName binder) freshName renames) supplyAfterBinder body
+       in (CLam freshBinder body' ty, supplyAfterBody)
+    CApp function argument ty ->
+      let (function', supplyAfterFunction) = go renames supply function
+          (argument', supplyAfterArgument) = go renames supplyAfterFunction argument
+       in (CApp function' argument' ty, supplyAfterArgument)
+    CTypeLam variables body ty ->
+      let (body', supplyAfterBody) = go renames supply body
+       in (CTypeLam variables body' ty, supplyAfterBody)
+    CTypeApp function arguments ty ->
+      let (function', supplyAfterFunction) = go renames supply function
+       in (CTypeApp function' arguments ty, supplyAfterFunction)
+    CLet bind body ty ->
+      let (bind', bodyRenames, supplyAfterBind) = freshenBind renames supply bind
+          (body', supplyAfterBody) = go bodyRenames supplyAfterBind body
+       in (CLet bind' body' ty, supplyAfterBody)
+    CCase scrutinee binder alternatives ty ->
+      let (scrutinee', supplyAfterScrutinee) = go renames supply scrutinee
+          (freshBinder, freshName, supplyAfterBinder) = freshenBinder supplyAfterScrutinee binder
+          caseRenames = Map.insert (coreBinderName binder) freshName renames
+          (alternatives', supplyAfterAlternatives) = freshenAlts caseRenames supplyAfterBinder alternatives
+       in (CCase scrutinee' freshBinder alternatives' ty, supplyAfterAlternatives)
+    CCoerce inner ty ->
+      let (inner', supply') = go renames supply inner
+       in (CCoerce inner' ty, supply')
+    CPrimOp op arguments ty ->
+      let (arguments', supply') = freshenExprs renames supply arguments
+       in (CPrimOp op arguments' ty, supply')
+    CForeignCall foreignImport arguments ty ->
+      let (arguments', supply') = freshenExprs renames supply arguments
+       in (CForeignCall foreignImport arguments' ty, supply')
+    expression'@CForeignImportValue {} ->
+      (expression', supply)
+
+  freshenBind renames supply = \case
+    CoreNonRec binder rhs ->
+      let (rhs', supplyAfterRhs) = go renames supply rhs
+          (freshBinder, freshName, supplyAfterBinder) = freshenBinder supplyAfterRhs binder
+       in (CoreNonRec freshBinder rhs', Map.insert (coreBinderName binder) freshName renames, supplyAfterBinder)
+    CoreRec pairs ->
+      let binders = map fst pairs
+          rhss = map snd pairs
+          (freshBinders, recRenames, supplyAfterBinders) = freshenBinders renames supply binders
+          (freshRhss, supplyAfterRhss) = freshenExprs recRenames supplyAfterBinders rhss
+       in (CoreRec (zip freshBinders freshRhss), recRenames, supplyAfterRhss)
+
+  freshenAlts _ supply [] =
+    ([], supply)
+  freshenAlts renames supply (CoreAlt altCon binders body : alternatives) =
+    let (freshBinders, altRenames, supplyAfterBinders) = freshenBinders renames supply binders
+        (body', supplyAfterBody) = go altRenames supplyAfterBinders body
+        (alternatives', supplyAfterAlternatives) = freshenAlts renames supplyAfterBody alternatives
+     in (CoreAlt altCon freshBinders body' : alternatives', supplyAfterAlternatives)
+
+  freshenExprs renames supply expressions =
+    foldl
+      ( \(freshened, currentSupply) currentExpression ->
+          let (freshExpression, nextSupply) = go renames currentSupply currentExpression
+           in (freshened <> [freshExpression], nextSupply)
+      )
+      ([], supply)
+      expressions
+
+validateOptimizedExpr :: CoreValidate.CoreValidationEnv -> Map.Map RName CoreType -> CoreExpr -> OptimizeM ()
+validateOptimizedExpr validationEnv env expression =
+  let localValidationEnv =
+        validationEnv
+          { CoreValidate.coreValueTypes =
+              Map.union env (CoreValidate.coreValueTypes validationEnv)
+          }
+   in case CoreValidate.validateExprWith localValidationEnv expression of
+        Left errors -> lift (Left (CoreEgglogInvalidOutput errors))
+        Right () -> pure ()
+
+selectorFunctionName :: CoreExpr -> Maybe RName
+selectorFunctionName = \case
+  CVar name _ ->
+    Just name
+  CTypeApp function _ _ ->
+    selectorFunctionName function
+  CCoerce function _ ->
+    selectorFunctionName function
+  CSpanned _ function ->
+    selectorFunctionName function
+  _ ->
+    Nothing
+
+lambdaExpression :: CoreExpr -> Maybe (CoreBinder, CoreExpr)
+lambdaExpression = \case
+  CLam binder body _ ->
+    Just (binder, body)
+  CCoerce expression _ ->
+    lambdaExpression expression
+  CSpanned _ expression ->
+    lambdaExpression expression
+  _ ->
+    Nothing
+
+shouldBetaReduce :: RName -> CoreExpr -> CoreExpr -> Bool
+shouldBetaReduce name argument body =
+  case freeOccurrenceCount name body of
+    0 -> True
+    1 -> cheapCoreArgument argument || argumentWithinInlineBudget
+    _ -> cheapCoreArgument argument
+ where
+  argumentWithinInlineBudget =
+    case boundedExpressionCost coreBetaInlineCostLimit argument of
+      Just {} -> True
+      Nothing -> False
+
+cheapCoreArgument :: CoreExpr -> Bool
+cheapCoreArgument = \case
+  CVar {} -> True
+  CLit {} -> True
+  CCon {} -> True
+  CCoerce expression _ -> cheapCoreArgument expression
+  CSpanned _ expression -> cheapCoreArgument expression
+  CTypeApp expression _ _ -> cheapCoreArgument expression
+  _ -> False
+
+atMay :: [a] -> Int -> Maybe a
+atMay values index
+  | index < 0 = Nothing
+  | otherwise =
+      case drop index values of
+        value : _ -> Just value
+        [] -> Nothing
+
+buildDictionaryRewriteEnv :: CoreFacts.CoreModuleFacts -> CoreModule -> DictionaryRewriteEnv
+buildDictionaryRewriteEnv moduleFacts coreModule =
+  DictionaryRewriteEnv
+    { dictionaryRewriteFacts = CoreFacts.coreModuleBindingFacts moduleFacts
+    , dictionaryRewriteSelectors =
+        Map.fromList
+          [ (dictionarySelectorName selector, selector)
+          | bind <- coreModuleBinds coreModule
+          , selector <- dictionarySelectorsFromBind bind
+          ]
+    , dictionaryRewriteDictionaries =
+        Map.fromList
+          [ (identity, dictionaryValue)
+          | bind <- coreModuleBinds coreModule
+          , (identity, dictionaryValue) <- dictionaryValuesFromBind moduleFacts bind
+          ]
+    }
+
+dictionarySelectorsFromBind :: CoreBind -> [DictionarySelector]
+dictionarySelectorsFromBind = \case
+  CoreNonRec binder rhs ->
+    maybe [] pure (dictionarySelectorFromRhs (coreBinderName binder) rhs)
+  CoreRec pairs ->
+    [ selector
+    | (binder, rhs) <- pairs
+    , selector <- maybe [] pure (dictionarySelectorFromRhs (coreBinderName binder) rhs)
+    ]
+
+dictionaryValuesFromBind :: CoreFacts.CoreModuleFacts -> CoreBind -> [(RName, KnownDictionaryValue)]
+dictionaryValuesFromBind moduleFacts = \case
+  CoreNonRec binder rhs ->
+    maybe [] pure (dictionaryValueFromBinding moduleFacts binder rhs)
+  CoreRec pairs ->
+    [ dictionaryValue
+    | (binder, rhs) <- pairs
+    , dictionaryValue <- maybe [] pure (dictionaryValueFromBinding moduleFacts binder rhs)
+    ]
+
+dictionaryValueFromBinding ::
+  CoreFacts.CoreModuleFacts ->
+  CoreBinder ->
+  CoreExpr ->
+  Maybe (RName, KnownDictionaryValue)
+dictionaryValueFromBinding moduleFacts binder rhs = do
+  facts <- CoreFacts.lookupCoreBindingFacts (coreBinderName binder) moduleFacts
+  dictionary <- CoreFacts.coreFactKnownDictionary facts
+  identity <- CoreFacts.coreKnownDictionaryIdentity dictionary
+  (constructorName, fields) <- peelConstructorApplication rhs []
+  if identity == coreBinderName binder
+    && constructorName == CoreFacts.coreKnownDictionaryConstructor dictionary
+    && map exprType fields == CoreFacts.coreKnownDictionaryFieldTypes dictionary
+    then
+      Just
+        ( identity
+        , KnownDictionaryValue
+            { knownDictionaryValueConstructor = constructorName
+            , knownDictionaryValueFields = fields
+            }
+        )
+    else Nothing
+
+dictionarySelectorFromRhs :: RName -> CoreExpr -> Maybe DictionarySelector
+dictionarySelectorFromRhs selectorName rhs =
+  case stripSelectorWrappers rhs of
+    CLam dictionaryBinder body _ ->
+      selectorFromBody dictionaryBinder body
+    _ ->
+      Nothing
+ where
+  selectorFromBody dictionaryBinder body =
+    case stripSelectorWrappers body of
+      CCase (CVar scrutineeName _) _ [CoreAlt (ConstructorAlt constructorName) fieldBinders selected] _
+        | scrutineeName == coreBinderName dictionaryBinder
+        , isDictionaryConstructorName constructorName
+        , Just selectedField <- selectedFieldName selected
+        , Just fieldIndex <- fieldBinderIndex selectedField fieldBinders ->
+            Just
+              DictionarySelector
+                { dictionarySelectorName = selectorName
+                , dictionarySelectorConstructor = constructorName
+                , dictionarySelectorFieldIndex = fieldIndex
+                }
+      _ ->
+        Nothing
+
+stripSelectorWrappers :: CoreExpr -> CoreExpr
+stripSelectorWrappers = \case
+  CTypeLam _ body _ ->
+    stripSelectorWrappers body
+  CCoerce expression _ ->
+    stripSelectorWrappers expression
+  CSpanned _ expression ->
+    stripSelectorWrappers expression
+  expression ->
+    expression
+
+selectedFieldName :: CoreExpr -> Maybe RName
+selectedFieldName expression =
+  case stripSelectorWrappers expression of
+    CVar name _ -> Just name
+    _ -> Nothing
+
+fieldBinderIndex :: RName -> [CoreBinder] -> Maybe Int
+fieldBinderIndex selectedName binders =
+  case [index | (index, binder) <- zip [0 ..] binders, coreBinderName binder == selectedName] of
+    [index] -> Just index
+    _ -> Nothing
+
+isDictionaryConstructorName :: RName -> Bool
+isDictionaryConstructorName name =
+  "$Mk" `Text.isPrefixOf` nameOcc name && "Dict" `Text.isSuffixOf` nameOcc name
+
+freeOccurrenceCount :: RName -> CoreExpr -> Int
+freeOccurrenceCount target = \case
+  CVar name _
+    | name == target -> 1
+    | otherwise -> 0
+  CLit {} -> 0
+  CCon {} -> 0
+  CSpanned _ expression ->
+    freeOccurrenceCount target expression
+  CLam binder body _
+    | coreBinderName binder == target -> 0
+    | otherwise -> freeOccurrenceCount target body
+  CApp function argument _ ->
+    freeOccurrenceCount target function + freeOccurrenceCount target argument
+  CTypeLam _ body _ ->
+    freeOccurrenceCount target body
+  CTypeApp function _ _ ->
+    freeOccurrenceCount target function
+  CLet bind body _ ->
+    freeOccurrenceCountBind target bind
+      + if target `Set.member` Set.fromList (map coreBinderName (bindersOf bind))
+        then 0
+        else freeOccurrenceCount target body
+  CCase scrutinee binder alternatives _ ->
+    freeOccurrenceCount target scrutinee
+      + if coreBinderName binder == target
+        then 0
+        else sum (map (freeOccurrenceCountAlt target) alternatives)
+  CCoerce expression _ ->
+    freeOccurrenceCount target expression
+  CPrimOp _ arguments _ ->
+    sum (map (freeOccurrenceCount target) arguments)
+  CForeignCall _ arguments _ ->
+    sum (map (freeOccurrenceCount target) arguments)
+  CForeignImportValue {} -> 0
+
+freeOccurrenceCountBind :: RName -> CoreBind -> Int
+freeOccurrenceCountBind target = \case
+  CoreNonRec binder rhs
+    | coreBinderName binder == target -> 0
+    | otherwise -> freeOccurrenceCount target rhs
+  CoreRec pairs
+    | target `Set.member` Set.fromList (map (coreBinderName . fst) pairs) -> 0
+    | otherwise -> sum [freeOccurrenceCount target rhs | (_, rhs) <- pairs]
+
+freeOccurrenceCountAlt :: RName -> CoreAlt -> Int
+freeOccurrenceCountAlt target (CoreAlt _ binders body)
+  | target `Set.member` Set.fromList (map coreBinderName binders) = 0
+  | otherwise = freeOccurrenceCount target body
 
 tryKnownCaseRewrite :: CoreValidate.CoreValidationEnv -> Map.Map RName CoreType -> CoreExpr -> OptimizeM CoreExpr
 tryKnownCaseRewrite validationEnv env expression =
@@ -574,7 +1022,7 @@ fromANFExpr expected expression =
     ALet name rhs body -> do
       rhsTy <- inferANFCoreType rhs
       rhsCore <- fromANFExpr rhsTy rhs
-      binder <- binderForANFName name rhsTy
+      binder <- freshCoreBinder (unName name) rhsTy
       modify' $
         \state ->
           state
@@ -610,15 +1058,6 @@ fromANFAtom expected atom =
           pure (CVar coreName ty)
         _ ->
           lift (Left (CoreEgglogUnknownANFName name))
-
-binderForANFName :: Name -> CoreType -> DecodeM CoreBinder
-binderForANFName name ty = do
-  state <- get
-  case Map.lookup name (decodeCoreNames state) of
-    Just coreName ->
-      pure (CoreBinder coreName ty)
-    Nothing ->
-      freshCoreBinder (unName name) ty
 
 freshCoreBinder :: Text -> CoreType -> DecodeM CoreBinder
 freshCoreBinder occurrence ty = do
@@ -915,6 +1354,72 @@ expressionCost = \case
     3 + sum (map expressionCost arguments)
   CForeignImportValue {} ->
     2
+
+boundedExpressionCost :: Int -> CoreExpr -> Maybe Int
+boundedExpressionCost limit expression =
+  snd <$> costExpr limit expression
+ where
+  fixed cost remaining
+    | cost <= remaining = Just (remaining - cost, cost)
+    | otherwise = Nothing
+
+  costMany remaining expressions =
+    foldM
+      ( \(currentRemaining, currentCost) currentExpression -> do
+          (nextRemaining, nextCost) <- costExpr currentRemaining currentExpression
+          Just (nextRemaining, currentCost + nextCost)
+      )
+      (remaining, 0)
+      expressions
+
+  costBind remaining = \case
+    CoreNonRec _ rhs ->
+      costExpr remaining rhs
+    CoreRec pairs ->
+      costMany remaining (map snd pairs)
+
+  costExpr remaining = \case
+    CVar {} -> fixed 1 remaining
+    CLit {} -> fixed 1 remaining
+    CCon {} -> fixed 1 remaining
+    CSpanned _ inner ->
+      costExpr remaining inner
+    CLam _ body _ -> do
+      (afterLambda, lambdaCost) <- fixed 1 remaining
+      (afterBody, bodyCost) <- costExpr afterLambda body
+      Just (afterBody, lambdaCost + bodyCost)
+    CApp function argument _ -> do
+      (afterApp, appCost) <- fixed 1 remaining
+      (afterFunction, functionCost) <- costExpr afterApp function
+      (afterArgument, argumentCost) <- costExpr afterFunction argument
+      Just (afterArgument, appCost + functionCost + argumentCost)
+    CTypeLam _ body _ ->
+      costExpr remaining body
+    CTypeApp function _ _ ->
+      costExpr remaining function
+    CLet bind body _ -> do
+      (afterLet, letCost) <- fixed 1 remaining
+      (afterBind, bindCost') <- costBind afterLet bind
+      (afterBody, bodyCost) <- costExpr afterBind body
+      Just (afterBody, letCost + bindCost' + bodyCost)
+    CCase scrutinee _ alternatives _ -> do
+      (afterCase, caseCost) <- fixed 1 remaining
+      (afterScrutinee, scrutineeCost) <- costExpr afterCase scrutinee
+      (afterAlternatives, alternativesCost) <-
+        costMany afterScrutinee [body | CoreAlt _ _ body <- alternatives]
+      Just (afterAlternatives, caseCost + scrutineeCost + alternativesCost)
+    CCoerce inner _ ->
+      costExpr remaining inner
+    CPrimOp _ arguments _ -> do
+      (afterPrim, primCost) <- fixed 2 remaining
+      (afterArguments, argumentCost) <- costMany afterPrim arguments
+      Just (afterArguments, primCost + argumentCost)
+    CForeignCall _ arguments _ -> do
+      (afterCall, callCost) <- fixed 3 remaining
+      (afterArguments, argumentCost) <- costMany afterCall arguments
+      Just (afterArguments, callCost + argumentCost)
+    CForeignImportValue {} ->
+      fixed 2 remaining
 
 nextUniqueAfterModule :: CoreModule -> Int
 nextUniqueAfterModule (CoreModule _ _ binds foreignExports _) =

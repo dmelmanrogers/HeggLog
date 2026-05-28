@@ -142,9 +142,12 @@ strict ANF representation.
 The Haskell 2010 Core optimizer must preserve lazy semantics and bottom. It now
 computes conservative Core facts in `Haskell2010.Core.Facts` for totality,
 no-error, known constants/constructors, demanded names, demanded constructor
-fields, and lambda strictness. Rewrites such as `x * 0 -> 0`, `if c then a else
-a -> a`, and `x / x -> 1` are unsafe without those guards because they can
-erase bottom or runtime errors.
+fields, lambda strictness, and saturated known dictionary identities. Known
+dictionary facts let the Core adapter replace selector/superclass projections
+with validated dictionary fields and then beta-reduce selected method lambdas.
+Rewrites such as `x * 0 -> 0`, `if c then a else a`, and `x / x -> 1` remain
+unsafe without totality/no-error/demand guards because they can erase bottom or
+runtime errors.
 
 Extraction from Egglog must produce typed Core, run the Core validator, preserve
 types, avoid unbound variables, preserve bottom/error behavior, and emit

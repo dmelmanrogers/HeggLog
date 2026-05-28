@@ -1,5 +1,6 @@
 module Haskell2010.Core.Facts
   ( CoreExprFacts (..)
+  , CoreKnownDictionary (..)
   , CoreKnownValue (..)
   , CoreModuleFacts (..)
   , analyzeCoreExpr
@@ -20,7 +21,7 @@ import qualified Data.Text as Text
 import Haskell2010.Core.Pretty (renderCoreType)
 import Haskell2010.Core.Syntax
 import qualified Haskell2010.Core.Validate as CoreValidate
-import Haskell2010.Names (RName, renderRName)
+import Haskell2010.Names (RName, nameOcc, renderRName)
 import Haskell2010.Syntax (Literal (..))
 import Runtime.Int
   ( HInt
@@ -41,6 +42,14 @@ data CoreKnownValue
   | CoreKnownTypeLambda [RName] CoreExpr
   deriving stock (Show, Eq, Ord)
 
+data CoreKnownDictionary = CoreKnownDictionary
+  { coreKnownDictionaryIdentity :: Maybe RName
+  , coreKnownDictionaryConstructor :: RName
+  , coreKnownDictionaryType :: CoreType
+  , coreKnownDictionaryFieldTypes :: [CoreType]
+  }
+  deriving stock (Show, Eq, Ord)
+
 data CoreExprFacts = CoreExprFacts
   { coreFactTotal :: Bool
   , coreFactNoError :: Bool
@@ -48,6 +57,33 @@ data CoreExprFacts = CoreExprFacts
   , coreFactStrictBinders :: Set RName
   , coreFactDemandedFields :: Map.Map RName (Set Int)
   , coreFactKnownValue :: Maybe CoreKnownValue
+  , coreFactKnownDictionary :: Maybe CoreKnownDictionary
+  }
+  deriving stock (Show, Eq, Ord)
+
+data CoreKnownDictionaryKey = CoreKnownDictionaryKey
+  { coreKnownDictionaryKeyIdentity :: Maybe RName
+  , coreKnownDictionaryKeyConstructor :: RName
+  , coreKnownDictionaryKeyType :: CoreType
+  , coreKnownDictionaryKeyFieldTypes :: [CoreType]
+  }
+  deriving stock (Show, Eq, Ord)
+
+data CoreKnownValueKey
+  = CoreKnownLiteralKey Literal
+  | CoreKnownConstructorKey RName [CoreType]
+  | CoreKnownLambdaKey RName CoreType CoreType
+  | CoreKnownTypeLambdaKey [RName] CoreType
+  deriving stock (Show, Eq, Ord)
+
+data CoreExprFactsKey = CoreExprFactsKey
+  { coreFactKeyTotal :: Bool
+  , coreFactKeyNoError :: Bool
+  , coreFactKeyDemandedNames :: Set RName
+  , coreFactKeyStrictBinders :: Set RName
+  , coreFactKeyDemandedFields :: Map.Map RName (Set Int)
+  , coreFactKeyKnownValue :: Maybe CoreKnownValueKey
+  , coreFactKeyKnownDictionary :: Maybe CoreKnownDictionaryKey
   }
   deriving stock (Show, Eq, Ord)
 
@@ -67,6 +103,7 @@ unknownFacts =
     , coreFactStrictBinders = Set.empty
     , coreFactDemandedFields = Map.empty
     , coreFactKnownValue = Nothing
+    , coreFactKnownDictionary = Nothing
     }
 
 valueFacts :: CoreKnownValue -> CoreExprFacts
@@ -101,10 +138,16 @@ analyzeCoreModule coreModule =
   fixFacts facts =
     let next =
           Map.fromList
-            [ (coreBinderName binder, analyzeExpr validationEnv facts rhs)
+            [ ( coreBinderName binder
+              , compactModuleFacts
+                  ( attachDictionaryIdentity
+                      (coreBinderName binder)
+                      (analyzeExpr validationEnv facts rhs)
+                  )
+              )
             | (binder, rhs) <- pairs
             ]
-     in if next == facts
+     in if factEnvKey next == factEnvKey facts
           then facts
           else fixFacts next
 
@@ -124,12 +167,12 @@ analyzeExpr validationEnv env = \case
     analyzeExpr validationEnv env expression
   CLam binder body _ ->
     lambdaFacts validationEnv env binder body
-  CApp function argument _ ->
-    appFacts validationEnv env function argument
+  CApp function argument resultTy ->
+    appFacts validationEnv env function argument resultTy
   CTypeLam variables body _ ->
     typeLambdaFacts validationEnv env variables body
-  CTypeApp function _ _ ->
-    typeAppFacts validationEnv env function
+  CTypeApp function _ resultTy ->
+    typeAppFacts validationEnv env function resultTy
   CLet bind body _ ->
     letFacts validationEnv env bind body
   CCase scrutinee binder alternatives _ ->
@@ -144,6 +187,7 @@ analyzeExpr validationEnv env = \case
           { coreFactTotal = False
           , coreFactNoError = False
           , coreFactKnownValue = Nothing
+          , coreFactKnownDictionary = Nothing
           }
   CForeignImportValue {} ->
     unknownFacts
@@ -169,11 +213,11 @@ typeLambdaFacts validationEnv env variables body =
         , coreFactDemandedFields = coreFactDemandedFields bodyFacts
         }
 
-appFacts :: CoreValidate.CoreValidationEnv -> FactEnv -> CoreExpr -> CoreExpr -> CoreExprFacts
-appFacts validationEnv env function argument =
+appFacts :: CoreValidate.CoreValidationEnv -> FactEnv -> CoreExpr -> CoreExpr -> CoreType -> CoreExprFacts
+appFacts validationEnv env function argument resultTy =
   case coreFactKnownValue functionFacts of
     Just (CoreKnownConstructor constructorName fields) ->
-      constructorApplicationFacts validationEnv constructorName fields argument functionFacts
+      constructorApplicationFacts validationEnv constructorName fields argument resultTy functionFacts
     Just (CoreKnownLambda binder body) ->
       lambdaApplicationFacts validationEnv env functionFacts binder body argument
     _ ->
@@ -181,23 +225,25 @@ appFacts validationEnv env function argument =
         { coreFactTotal = False
         , coreFactNoError = False
         , coreFactKnownValue = Nothing
+        , coreFactKnownDictionary = Nothing
         }
  where
   functionFacts =
     analyzeExpr validationEnv env function
 
-typeAppFacts :: CoreValidate.CoreValidationEnv -> FactEnv -> CoreExpr -> CoreExprFacts
-typeAppFacts validationEnv env function =
+typeAppFacts :: CoreValidate.CoreValidationEnv -> FactEnv -> CoreExpr -> CoreType -> CoreExprFacts
+typeAppFacts validationEnv env function resultTy =
   case coreFactKnownValue functionFacts of
     Just (CoreKnownTypeLambda _ body) ->
       combineSequential functionFacts (analyzeExpr validationEnv env body)
     Just CoreKnownConstructor {} ->
-      functionFacts
+      functionFacts {coreFactKnownDictionary = knownDictionaryFacts validationEnv resultTy functionFacts}
     _ ->
       functionFacts
         { coreFactTotal = False
         , coreFactNoError = False
         , coreFactKnownValue = Nothing
+        , coreFactKnownDictionary = Nothing
         }
  where
   functionFacts =
@@ -208,24 +254,125 @@ constructorApplicationFacts ::
   RName ->
   [CoreExpr] ->
   CoreExpr ->
+  CoreType ->
   CoreExprFacts ->
   CoreExprFacts
-constructorApplicationFacts validationEnv constructorName fields argument functionFacts =
+constructorApplicationFacts validationEnv constructorName fields argument resultTy functionFacts =
   case Map.lookup constructorName (CoreValidate.coreConstructorTypes validationEnv) of
     Just info
       | length nextFields <= length (constructorFields info) ->
-          functionFacts
-            { coreFactKnownValue = Just (CoreKnownConstructor constructorName nextFields)
-            }
+          let knownDictionary =
+                knownDictionaryConstructorFacts validationEnv constructorName resultTy nextFields
+              knownValue =
+                case knownDictionary of
+                  Just {} -> Nothing
+                  Nothing -> Just (CoreKnownConstructor constructorName nextFields)
+           in functionFacts
+                { coreFactKnownValue = knownValue
+                , coreFactKnownDictionary = knownDictionary
+                }
     _ ->
       functionFacts
         { coreFactTotal = False
         , coreFactNoError = False
         , coreFactKnownValue = Nothing
+        , coreFactKnownDictionary = Nothing
         }
  where
   nextFields =
     fields <> [argument]
+
+knownDictionaryFacts :: CoreValidate.CoreValidationEnv -> CoreType -> CoreExprFacts -> Maybe CoreKnownDictionary
+knownDictionaryFacts validationEnv resultTy facts =
+  case coreFactKnownValue facts of
+    Just (CoreKnownConstructor constructorName fields) ->
+      knownDictionaryConstructorFacts validationEnv constructorName resultTy fields
+    _ ->
+      Nothing
+
+knownDictionaryConstructorFacts ::
+  CoreValidate.CoreValidationEnv ->
+  RName ->
+  CoreType ->
+  [CoreExpr] ->
+  Maybe CoreKnownDictionary
+knownDictionaryConstructorFacts validationEnv constructorName resultTy fields = do
+  info <- Map.lookup constructorName (CoreValidate.coreConstructorTypes validationEnv)
+  expectedFields <- CoreValidate.constructorFieldsForResult info resultTy
+  if isDictionaryConstructorName constructorName
+    && isDictionaryType resultTy
+    && length fields == length expectedFields
+    && and (zipWith ((==) . exprType) fields expectedFields)
+    then
+      Just
+        CoreKnownDictionary
+          { coreKnownDictionaryIdentity = Nothing
+          , coreKnownDictionaryConstructor = constructorName
+          , coreKnownDictionaryType = resultTy
+          , coreKnownDictionaryFieldTypes = map exprType fields
+          }
+    else Nothing
+
+attachDictionaryIdentity :: RName -> CoreExprFacts -> CoreExprFacts
+attachDictionaryIdentity identity facts =
+  facts
+    { coreFactKnownDictionary =
+        (\dictionary -> dictionary {coreKnownDictionaryIdentity = Just identity})
+          <$> coreFactKnownDictionary facts
+    }
+
+compactModuleFacts :: CoreExprFacts -> CoreExprFacts
+compactModuleFacts facts =
+  facts {coreFactKnownValue = Nothing}
+
+factEnvKey :: Map.Map RName CoreExprFacts -> Map.Map RName CoreExprFactsKey
+factEnvKey =
+  Map.map coreExprFactsKey
+
+coreExprFactsKey :: CoreExprFacts -> CoreExprFactsKey
+coreExprFactsKey facts =
+  CoreExprFactsKey
+    { coreFactKeyTotal = coreFactTotal facts
+    , coreFactKeyNoError = coreFactNoError facts
+    , coreFactKeyDemandedNames = coreFactDemandedNames facts
+    , coreFactKeyStrictBinders = coreFactStrictBinders facts
+    , coreFactKeyDemandedFields = coreFactDemandedFields facts
+    , coreFactKeyKnownValue = coreKnownValueKey <$> coreFactKnownValue facts
+    , coreFactKeyKnownDictionary = coreKnownDictionaryKey <$> coreFactKnownDictionary facts
+    }
+
+coreKnownValueKey :: CoreKnownValue -> CoreKnownValueKey
+coreKnownValueKey = \case
+  CoreKnownLiteral literal ->
+    CoreKnownLiteralKey literal
+  CoreKnownConstructor constructorName fields ->
+    CoreKnownConstructorKey constructorName (map exprType fields)
+  CoreKnownLambda binder body ->
+    CoreKnownLambdaKey (coreBinderName binder) (coreBinderType binder) (exprType body)
+  CoreKnownTypeLambda variables body ->
+    CoreKnownTypeLambdaKey variables (exprType body)
+
+coreKnownDictionaryKey :: CoreKnownDictionary -> CoreKnownDictionaryKey
+coreKnownDictionaryKey dictionary =
+  CoreKnownDictionaryKey
+    { coreKnownDictionaryKeyIdentity = coreKnownDictionaryIdentity dictionary
+    , coreKnownDictionaryKeyConstructor = coreKnownDictionaryConstructor dictionary
+    , coreKnownDictionaryKeyType = coreKnownDictionaryType dictionary
+    , coreKnownDictionaryKeyFieldTypes = coreKnownDictionaryFieldTypes dictionary
+    }
+
+isDictionaryConstructorName :: RName -> Bool
+isDictionaryConstructorName name =
+  "$Mk" `Text.isPrefixOf` nameOcc name && "Dict" `Text.isSuffixOf` nameOcc name
+
+isDictionaryType :: CoreType -> Bool
+isDictionaryType = \case
+  CTyApp fn _ ->
+    isDictionaryType fn
+  CTyCon name ->
+    "$" `Text.isPrefixOf` nameOcc name && "Dict" `Text.isSuffixOf` nameOcc name
+  _ ->
+    False
 
 lambdaApplicationFacts ::
   CoreValidate.CoreValidationEnv ->
@@ -291,6 +438,7 @@ caseFacts validationEnv env scrutinee binder alternatives =
             , coreFactStrictBinders = Set.union (coreFactStrictBinders scrutineeFacts) branchStrict
             , coreFactDemandedFields = Map.unionWith Set.union (coreFactDemandedFields scrutineeFacts) branchFields
             , coreFactKnownValue = Nothing
+            , coreFactKnownDictionary = Nothing
             }
  where
   scrutineeFacts =
@@ -408,6 +556,7 @@ combineCaseScrutinee scrutineeFacts selectedFacts =
     , coreFactStrictBinders = Set.union (coreFactStrictBinders scrutineeFacts) (coreFactStrictBinders selectedFacts)
     , coreFactDemandedFields = Map.unionWith Set.union (coreFactDemandedFields scrutineeFacts) (coreFactDemandedFields selectedFacts)
     , coreFactKnownValue = coreFactKnownValue selectedFacts
+    , coreFactKnownDictionary = coreFactKnownDictionary selectedFacts
     }
 
 caseIsExhaustive :: CoreValidate.CoreValidationEnv -> CoreType -> [CoreAlt] -> Bool
@@ -453,6 +602,7 @@ primitiveFacts validationEnv env op arguments =
             { coreFactTotal = all coreFactTotal argumentFacts && noError
             , coreFactNoError = noError
             , coreFactKnownValue = knownResult
+            , coreFactKnownDictionary = Nothing
             }
 
 specialPrimitiveDemand ::
@@ -482,6 +632,7 @@ ioBoundaryFacts evaluatedFacts =
     { coreFactTotal = False
     , coreFactNoError = False
     , coreFactKnownValue = Nothing
+    , coreFactKnownDictionary = Nothing
     }
 
 primitiveNoErrorFromFacts :: CorePrimOp -> [CoreExpr] -> [CoreExprFacts] -> Bool
@@ -839,6 +990,7 @@ combineSequential first second =
     , coreFactStrictBinders = Set.union (coreFactStrictBinders first) (coreFactStrictBinders second)
     , coreFactDemandedFields = Map.unionWith Set.union (coreFactDemandedFields first) (coreFactDemandedFields second)
     , coreFactKnownValue = coreFactKnownValue second
+    , coreFactKnownDictionary = coreFactKnownDictionary second
     }
 
 intersectDemandedNames :: [Set RName] -> Set RName
@@ -867,6 +1019,7 @@ renderCoreExprFacts facts =
     , "strict=[" <> renderNames (coreFactStrictBinders facts) <> "]"
     , "fields=[" <> renderFields (coreFactDemandedFields facts) <> "]"
     , "known=" <> renderKnownValue (coreFactKnownValue facts)
+    , "dictionary=" <> renderKnownDictionary (coreFactKnownDictionary facts)
     ]
 
 renderKnownValue :: Maybe CoreKnownValue -> Text
@@ -879,6 +1032,17 @@ renderKnownValue = \case
     "lambda " <> renderRName (coreBinderName binder) <> " :: " <> renderCoreType (coreBinderType binder)
   Just (CoreKnownTypeLambda variables _) ->
     "type-lambda [" <> Text.intercalate ", " (map renderRName variables) <> "]"
+
+renderKnownDictionary :: Maybe CoreKnownDictionary -> Text
+renderKnownDictionary = \case
+  Nothing -> "unknown"
+  Just dictionary ->
+    renderRName (coreKnownDictionaryConstructor dictionary)
+      <> "/"
+      <> Text.pack (show (length (coreKnownDictionaryFieldTypes dictionary)))
+      <> " :: "
+      <> renderCoreType (coreKnownDictionaryType dictionary)
+      <> maybe "" (\identity -> " as " <> renderRName identity) (coreKnownDictionaryIdentity dictionary)
 
 renderNames :: Set RName -> Text
 renderNames names =

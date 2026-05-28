@@ -9822,7 +9822,7 @@
     {
       "id": "EGG-CORE-011",
       "title": "dictionary-known facts",
-      "status": "not started",
+      "status": "complete",
       "category": "egglog",
       "depends_on": [
         "CORE-010"
@@ -9830,7 +9830,7 @@
       "blocks": [],
       "milestone": "M16",
       "acceptance_criteria": [
-        "dictionary-known facts is implemented, completed, or explicitly documented according to status `not started`.",
+        "dictionary-known facts is implemented, completed, or explicitly documented according to status `complete`.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
@@ -9926,7 +9926,7 @@
     {
       "id": "EGG-CORE-015",
       "title": "dictionary simplification",
-      "status": "not started",
+      "status": "complete",
       "category": "egglog",
       "depends_on": [
         "CORE-010"
@@ -9934,7 +9934,7 @@
       "blocks": [],
       "milestone": "M16",
       "acceptance_criteria": [
-        "dictionary simplification is implemented, completed, or explicitly documented according to status `not started`.",
+        "dictionary simplification is implemented, completed, or explicitly documented according to status `complete`.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],

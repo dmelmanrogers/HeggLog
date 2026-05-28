@@ -459,9 +459,11 @@ optimizer also folds known literal cases and saturated known-constructor cases
 for ADT/list/tuple/dictionary-shaped Core, including constructor-field
 projection with tests for unused lazy fields and forced field bottom. The Core
 fact analyzer now tracks conservative totality, no-error, demand, demanded
-constructor fields, and lambda strictness facts. Broader dictionary
-simplification and full Core-native equality-saturation remain part of the full
-Phase 15 expansion.
+constructor fields, lambda strictness facts, and saturated known dictionary
+identities. Known dictionary selector and superclass projections now simplify to
+validated dictionary fields, and selected method lambdas beta-reduce under Core
+validation. Full Core-native equality-saturation remains part of the full Phase
+15 expansion.
 
 Deliverables:
 

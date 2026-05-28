@@ -17652,7 +17652,7 @@ Notes:
 ## EGG-CORE-011 — dictionary-known facts
 
 Status:
-- not started
+- complete
 
 Category:
 - egglog
@@ -17680,7 +17680,7 @@ Files likely touched:
 - `test/haskell2010/conformance/egglog/`
 
 Acceptance criteria:
-- dictionary-known facts is implemented, completed, or explicitly documented according to status `not started`.
+- dictionary-known facts is implemented, completed, or explicitly documented according to status `complete`.
 - All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
 - The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
 
@@ -17696,6 +17696,9 @@ Documentation updates:
 
 Notes:
 - Milestone M16 (Egglog Core optimizer). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete: `Haskell2010.Core.Facts` records saturated known dictionary
+  constructor facts, including stable top-level dictionary identity,
+  constructor, result type, and ordered field types.
 
 ## EGG-CORE-012 — safe constant folding
 
@@ -17844,7 +17847,7 @@ Notes:
 ## EGG-CORE-015 — dictionary simplification
 
 Status:
-- not started
+- complete
 
 Category:
 - egglog
@@ -17872,7 +17875,7 @@ Files likely touched:
 - `test/haskell2010/conformance/egglog/`
 
 Acceptance criteria:
-- dictionary simplification is implemented, completed, or explicitly documented according to status `not started`.
+- dictionary simplification is implemented, completed, or explicitly documented according to status `complete`.
 - All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
 - The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
 
@@ -17888,6 +17891,10 @@ Documentation updates:
 
 Notes:
 - Milestone M16 (Egglog Core optimizer). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete: `Optimize.CoreEgglog` recognizes method and superclass selector
+  functions over known dictionaries, rewrites them to validated dictionary
+  fields, and beta-reduces selected method lambdas while preserving typed Core
+  validation and native optimized/unoptimized agreement.
 
 ## EGG-CORE-016 — bottom-preserving boolean simplification
 

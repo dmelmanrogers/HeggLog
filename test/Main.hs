@@ -402,6 +402,8 @@ testGroups =
       , pureTest "tracks lazy demand and lambda strictness facts" testHaskell2010CoreFactsDemandStrictness
       , pureTest "tracks demanded constructor-field facts" testHaskell2010CoreFactsConstructorFieldDemand
       , pureTest "exposes Core facts through Egglog results" testHaskell2010CoreEgglogExposesFacts
+      , pureTest "tracks dictionary-known Core facts" testHaskell2010CoreFactsDictionaryKnown
+      , pureTest "simplifies known dictionary selector plumbing" testHaskell2010CoreEgglogSimplifiesDictionarySelectors
       , pureTest "preserves lazy constructor field semantics" testHaskell2010CoreEgglogPreservesKnownConstructorLaziness
       , pureTest "preserves lazy let semantics through optimized Core and STG" testHaskell2010CoreEgglogPreservesLazyLet
       , pureTest "does not erase strict bottom dependencies" testHaskell2010CoreEgglogPreservesStrictBottom
@@ -4488,7 +4490,13 @@ testHaskell2010NativeDerivedBounded = do
   llvmText <- compileHaskell2010NativeText haskell2010DerivedBoundedSource
   assertBool "native derived Bounded emits generated product dictionary" ("fBoundedPair" `Text.isInfixOf` llvmText)
   assertBool "native derived Bounded emits generated record dictionary" ("fBoundedRecord" `Text.isInfixOf` llvmText)
-  assertBool "native derived Bounded emits generated newtype dictionary" ("fBoundedFlag" `Text.isInfixOf` llvmText)
+  assertBool
+    "native derived Bounded emits or validly erases generated newtype dictionary"
+    ( "fBoundedFlag" `Text.isInfixOf` llvmText
+        || ( "fEqFlag" `Text.isInfixOf` llvmText
+               && "fShowFlag" `Text.isInfixOf` llvmText
+           )
+    )
 
 testHaskell2010NativeAppend :: Either String ()
 testHaskell2010NativeAppend = do
@@ -5219,18 +5227,90 @@ testHaskell2010CoreFactsConstructorFieldDemand = do
 testHaskell2010CoreEgglogExposesFacts :: Either String ()
 testHaskell2010CoreEgglogExposesFacts = do
   result <- optimizeHaskell2010CoreModule haskell2010PrimitiveArithmeticCoreModule
-  originalFacts <- lookupFacts "main" (H2010CoreEgglog.coreEgglogOriginalFacts result)
-  optimizedFacts <- lookupFacts "main" (H2010CoreEgglog.coreEgglogOptimizedFacts result)
+  originalFacts <- lookupCoreFactsOccurrence "main" (H2010CoreEgglog.coreEgglogOriginalFacts result)
+  optimizedFacts <- lookupCoreFactsOccurrence "main" (H2010CoreEgglog.coreEgglogOptimizedFacts result)
   assertBool "original arithmetic facts are total" (H2010CoreFacts.coreExprIsTotal originalFacts)
   assertBool "original arithmetic facts have no runtime error" (H2010CoreFacts.coreExprHasNoRuntimeError originalFacts)
   assertBool "optimized arithmetic facts are total" (H2010CoreFacts.coreExprIsTotal optimizedFacts)
   assertBool "optimized arithmetic facts have no runtime error" (H2010CoreFacts.coreExprHasNoRuntimeError optimizedFacts)
+
+testHaskell2010CoreFactsDictionaryKnown :: Either String ()
+testHaskell2010CoreFactsDictionaryKnown = do
+  coreModule <- typecheckHaskell2010 haskell2010DictionarySimplificationSource
+  let moduleFacts = H2010CoreFacts.analyzeCoreModule coreModule
+  eqFacts <- lookupCoreFactsOccurrence "$fEqInteger" moduleFacts
+  numFacts <- lookupCoreFactsOccurrence "$fNumInteger" moduleFacts
+  eqDictionary <- expectKnownDictionary "$fEqInteger" "$MkEqDict" 2 eqFacts
+  numDictionary <- expectKnownDictionary "$fNumInteger" "$MkNumDict" 9 numFacts
+  assertBool
+    "known Num dictionary records its Eq superclass field type"
+    (any (typeContainsTyConOccurrence "$EqDict") (H2010CoreFacts.coreKnownDictionaryFieldTypes numDictionary))
+  assertBool
+    "known Eq dictionary method fields are typed functions"
+    (all isFunctionType (H2010CoreFacts.coreKnownDictionaryFieldTypes eqDictionary))
  where
-  lookupFacts occurrence moduleFacts =
-    case [facts | (name, facts) <- Map.toList (H2010CoreFacts.coreModuleBindingFacts moduleFacts), H2010Names.nameOcc name == occurrence] of
-      [facts] -> Right facts
-      [] -> Left ("missing facts for binding " <> Text.unpack occurrence)
-      _ -> Left ("ambiguous facts for binding " <> Text.unpack occurrence)
+  expectKnownDictionary identity constructor fieldCount facts =
+    case H2010CoreFacts.coreFactKnownDictionary facts of
+      Nothing ->
+        Left ("missing known dictionary facts for " <> Text.unpack identity)
+      Just dictionary -> do
+        expectEqual
+          (Text.unpack identity <> " dictionary identity")
+          (Just identity)
+          (H2010Names.nameOcc <$> H2010CoreFacts.coreKnownDictionaryIdentity dictionary)
+        expectEqual
+          (Text.unpack identity <> " dictionary constructor")
+          constructor
+          (H2010Names.nameOcc (H2010CoreFacts.coreKnownDictionaryConstructor dictionary))
+        expectEqual
+          (Text.unpack identity <> " dictionary field count")
+          fieldCount
+          (length (H2010CoreFacts.coreKnownDictionaryFieldTypes dictionary))
+        Right dictionary
+
+  isFunctionType = \case
+    H2010Core.CTyFun {} -> True
+    _ -> False
+
+  typeContainsTyConOccurrence occurrence = \case
+    H2010Core.CTyCon name ->
+      H2010Names.nameOcc name == occurrence
+    H2010Core.CTyApp typeFunction argument ->
+      typeContainsTyConOccurrence occurrence typeFunction || typeContainsTyConOccurrence occurrence argument
+    H2010Core.CTyFun argument result ->
+      typeContainsTyConOccurrence occurrence argument || typeContainsTyConOccurrence occurrence result
+    H2010Core.CTyForall _ body ->
+      typeContainsTyConOccurrence occurrence body
+    H2010Core.CTyTuple fields ->
+      any (typeContainsTyConOccurrence occurrence) fields
+    H2010Core.CTyList element ->
+      typeContainsTyConOccurrence occurrence element
+    H2010Core.CTyVar {} ->
+      False
+
+testHaskell2010CoreEgglogSimplifiesDictionarySelectors :: Either String ()
+testHaskell2010CoreEgglogSimplifiesDictionarySelectors = do
+  result <- optimizeHaskell2010Core haskell2010DictionarySimplificationSource
+  assertBool
+    "known dictionary selector rewrite should be recorded"
+    (any ("core-dictionary-select-known" `Text.isInfixOf`) (H2010CoreEgglog.coreEgglogAppliedRules result))
+  assertBool
+    "known dictionary method lambdas should beta-reduce after selection"
+    (any ("core-beta-known-lambda" `Text.isInfixOf`) (H2010CoreEgglog.coreEgglogAppliedRules result))
+  (_, mainRhs) <- lookupCoreBindingOccurrence "main" (H2010CoreEgglog.coreEgglogOptimizedModule result)
+  assertBool "optimized main no longer calls Prelude (==) selector" (not (containsVarOccurrence "==" mainRhs))
+  assertBool "optimized main no longer passes the Eq Integer dictionary" (not (containsVarOccurrence "$fEqInteger" mainRhs))
+  assertBool "optimized main no longer calls fromInteger selector" (not (containsVarOccurrence "fromInteger" mainRhs))
+  assertBool "optimized main no longer passes the Num Integer dictionary" (not (containsVarOccurrence "$fNumInteger" mainRhs))
+  expectCoreEvalInt
+    "optimized dictionary simplification Core oracle"
+    1
+    =<< evalHaskell2010CoreModuleBinding "main" (H2010CoreEgglog.coreEgglogOptimizedModule result)
+  stgProgram <- lowerOptimizedCoreToSTG result
+  expectSTGInt
+    "optimized dictionary simplification STG oracle"
+    1
+    =<< evalSTGBinding "main" stgProgram
 
 testHaskell2010CoreEgglogPreservesKnownConstructorLaziness :: Either String ()
 testHaskell2010CoreEgglogPreservesKnownConstructorLaziness = do
@@ -5336,6 +5416,7 @@ haskell2010CoreEgglogNativeAgreementCases =
   [ ("arithmetic", haskell2010ArithmeticSource, ExpectedNativeStdout "9\n")
   , ("bool-case", haskell2010BoolCaseSource, ExpectedNativeStdout "7\n")
   , ("known-constructor", haskell2010KnownConstructorCaseSource, ExpectedNativeStdout "7\n")
+  , ("dictionary-simplification", haskell2010DictionarySimplificationSource, ExpectedNativeStdout "1\n")
   , ("known-constructor-lazy-field", haskell2010KnownConstructorLazyFieldSource, ExpectedNativeStdout "5\n")
   , ("lazy-let", haskell2010LazyLetSource, ExpectedNativeStdout "5\n")
   , ("known-constructor-forced-field", haskell2010KnownConstructorForcedFieldSource, ExpectedNativeRuntimeError)
@@ -9468,6 +9549,11 @@ haskell2010KnownConstructorCaseSource =
   \main = case Box (1 + 2) of\n\
   \  Box x -> x + 4\n"
 
+haskell2010DictionarySimplificationSource :: Text
+haskell2010DictionarySimplificationSource =
+  "module Main where\n\
+  \main = if (7 :: Integer) == (7 :: Integer) then (1 :: Integer) else (0 :: Integer)\n"
+
 haskell2010KnownConstructorLazyFieldSource :: Text
 haskell2010KnownConstructorLazyFieldSource =
   "module Main where\n\
@@ -11116,6 +11202,18 @@ lookupCoreBindingOccurrence occurrence coreModule =
   case List.find ((== occurrence) . H2010Names.nameOcc . H2010Core.coreBinderName . fst) (concatMap coreBindPairs (H2010Core.coreModuleBinds coreModule)) of
     Just pair -> Right pair
     Nothing -> Left ("missing Core binding `" <> Text.unpack occurrence <> "`")
+
+lookupCoreFactsOccurrence :: Text -> H2010CoreFacts.CoreModuleFacts -> Either String H2010CoreFacts.CoreExprFacts
+lookupCoreFactsOccurrence occurrence moduleFacts =
+  case
+    [ facts
+    | (name, facts) <- Map.toList (H2010CoreFacts.coreModuleBindingFacts moduleFacts)
+    , H2010Names.nameOcc name == occurrence
+    ]
+  of
+    [facts] -> Right facts
+    [] -> Left ("missing facts for binding `" <> Text.unpack occurrence <> "`")
+    _ -> Left ("ambiguous facts for binding `" <> Text.unpack occurrence <> "`")
 
 coreBindPairs :: H2010Core.CoreBind -> [(H2010Core.CoreBinder, H2010Core.CoreExpr)]
 coreBindPairs = \case

@@ -43,13 +43,16 @@ Implemented Core fact metadata:
 - demanded names
 - demanded constructor fields
 - lambda strictness
+- known dictionary identities, constructors, result types, and field types
 
 These facts are conservative: an expression is marked total or no-error only
 when the analyzer can prove the evaluated path terminates without runtime
 failure. Lazy `let` RHSs and constructor fields are not charged to totality or
 no-error unless demanded by a selected case branch, primitive operation, or
-strict function body. IO and foreign-call boundaries remain may-error and
-non-total.
+strict function body. Known dictionary facts are recorded only for saturated
+dictionary constructor values with validated field types, and top-level instance
+dictionaries carry their stable binding identity. IO and foreign-call boundaries
+remain may-error and non-total.
 
 Planned full Core-native Egglog sorts and facts:
 
@@ -104,6 +107,8 @@ Implemented for Core fragments:
 - case-of-known literal
 - constructor-field projection for selected known-constructor alternatives,
   preserving lazy unused fields and forced bottom behavior
+- dictionary selector and superclass projection over known dictionaries,
+  followed by validated beta-reduction for selected method lambdas
 - typed extraction back to Core
 - selected-rule provenance and fragment cost reporting
 - `--no-egglog` native comparison coverage
@@ -111,7 +116,6 @@ Implemented for Core fragments:
 Planned full Core optimizations:
 
 - constant folding when total and safe
-- dictionary simplification
 - boolean simplification preserving bottom
 - safe arithmetic identities
 - dead branch elimination with guards
