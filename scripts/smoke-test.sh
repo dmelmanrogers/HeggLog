@@ -26,11 +26,16 @@ python3 scripts/validate-haskell2010-conformance.py
 
 if ! command -v clang >/dev/null 2>&1; then
   if [[ "$strict_native" -eq 1 ]]; then
-    printf 'clang is required for --strict-native smoke tests\n' >&2
+    scripts/check-native-toolchain.sh
     exit 1
   fi
   printf '== native smoke tests skipped: clang unavailable ==\n'
   exit 0
+fi
+
+if [[ "$strict_native" -eq 1 ]]; then
+  printf '== native toolchain ==\n'
+  scripts/check-native-toolchain.sh
 fi
 
 printf '== native executable smoke tests ==\n'

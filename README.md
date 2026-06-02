@@ -30,38 +30,46 @@ Implemented today for the current `.hg` compiler-supported subset:
 Implemented today for the Haskell 2010 target:
 
 - layout-aware Haskell 2010 frontend
-- renamer, module graph loading, imports, exports, qualified aliases, and
-  whole-program flattening for the executable subset
+- renamer, module graph loading, import search paths, imports, exports,
+  qualified aliases, implicit/explicit Prelude behavior, instance movement,
+  and whole-program source-graph compilation for the executable subset
 - typed Core IR, validator, and utilities
-- Hindley-Milner typechecker and source-to-Core desugaring for the documented
-  executable subset
+- Hindley-Milner typechecker, kind checking, class dictionaries, deriving,
+  standard-library module interfaces, and source-to-Core desugaring for the
+  documented executable subset
 - Core-0 reference evaluator for validated typed Core
 - STG-like lazy IR and in-process runtime evaluator
 - Core-to-STG lowering for the executable subset
 - native executable output for the executable subset through a boxed lazy
   STG LLVM runtime
-- Egglog Core optimization for safe typed Core fragments, including Core-0
-  arithmetic/Bool rewrites and known-constructor case/projection rewrites, with
-  Core/STG/native oracle tests and `--no-egglog` comparison coverage
-- custom ADTs, list/tuple and Prelude data constructors, recursion,
-  user-defined dictionary-passed classes, built-in `Eq`/`Ord`/`Num`/`Show`
-  dictionary calls, overloaded integer literals/defaulting, `main :: IO ()`,
-  `putStrLn`, `print`, and same-directory multi-file modules
-- a mandatory Haskell 2010 conformance baseline with a JSON manifest, 151
-  fixtures, exact native stdout checks, runtime-error checks, compile-error
-  checks, and explicit unsupported-feature cases
+- Egglog Core optimization for safe typed Core fragments, including arithmetic
+  and Bool rewrites, known-constructor rewrites, demand/strictness facts, and
+  known dictionary simplification with Core/STG/native oracle tests and
+  `--no-egglog` comparison coverage
+- custom ADTs, records, newtypes, list/tuple and Prelude data constructors,
+  recursion, user-defined dictionary-passed classes, Report-shaped
+  `Show`/`Read` surfaces for supported values, deriving for supported
+  `Eq`/`Ord`/`Show`/`Read`/`Enum`/`Bounded` declarations, overloaded integer
+  literals/defaulting, broad Prelude/library imports, `main :: IO ()`,
+  `putStrLn`, `getLine`, `print`, `System.IO`, `System.Environment`,
+  `System.Exit`, and multi-file modules through search paths
+- Haskell 2010 FFI import/export lowering for the supported `ccall` ABI slice,
+  including scalar/floating/pointer marshalling, link metadata, wrapper
+  callbacks, foreign exports, `StablePtr`, `ForeignPtr`, finalizers, and
+  Foreign library helpers covered by native fixtures
+- a mandatory Haskell 2010 conformance baseline with a JSON manifest, 158
+  conformance cases, exact native stdout checks, runtime-error checks,
+  compile-error checks, and explicit unsupported-feature cases
 
-Planned for the broader Haskell 2010 target:
+Remaining tracked work:
 
-- broader `Show`/`String` interoperability and library behavior
-- superclasses, default methods, instance contexts, deriving, additional
-  numeric classes, and the broader Prelude hierarchy
-- irrefutable/lazy pattern semantics, richer diagnostics, broader IO/Monad
-  support, package search paths, and full Haskell 2010 conformance
+- release-quality documentation, CI, installation, packaging, coverage,
+  benchmarking, versioning, and changelog tasks in milestone M20
 
-The current compiler passes the documented executable-subset conformance cases.
-Full Haskell 2010 conformance remains incomplete. Unsupported features are now
-represented as explicit conformance fixtures rather than omitted from testing.
+The current compiler passes the documented Haskell 2010 conformance fixtures in
+the repository. Unsupported behavior is represented as explicit conformance
+fixtures rather than omitted from testing. The authoritative status is the
+numbered tracker in `docs/haskell2010-todo.md`.
 
 ## Quickstart
 
@@ -72,10 +80,52 @@ cabal build all
 cabal test all
 ```
 
+Install and smoke-test the executable:
+
+```bash
+scripts/install-smoke-test.sh
+```
+
+Run the curated examples gallery smoke test:
+
+```bash
+scripts/examples-gallery-smoke.sh
+```
+
+Run the runtime build integration smoke test:
+
+```bash
+scripts/runtime-build-smoke.sh
+```
+
+Run the lint gate:
+
+```bash
+scripts/lint.sh
+```
+
+Run the coverage report:
+
+```bash
+scripts/coverage-report.sh
+```
+
+Run the benchmark suite:
+
+```bash
+scripts/benchmark.py
+```
+
 Run the mandatory end-to-end wet-test path:
 
 ```bash
 scripts/e2e-wet-test.sh
+```
+
+Run the full release gate:
+
+```bash
+scripts/release-check.sh
 ```
 
 Run only the Haskell 2010 conformance baseline:
@@ -88,6 +138,12 @@ Validate the Haskell 2010 engineering backlog:
 
 ```bash
 python3 scripts/validate-haskell2010-todo.py
+```
+
+Validate the native toolchain required by release-quality native tests:
+
+```bash
+scripts/check-native-toolchain.sh
 ```
 
 Run current `.hg` report/interpreter mode:
@@ -195,6 +251,21 @@ should be reported as an error instead of producing unoptimized output.
 - [Haskell 2010 implementation plan](docs/haskell2010-implementation-plan.md)
 - [Haskell 2010 frontend specification](docs/haskell2010-frontend-spec.md)
 - [Haskell 2010 status summary](docs/haskell2010-status-summary.md)
+- [Design document completion audit](docs/design-doc-completion-audit.md)
+- [Examples and tutorial documentation plan](docs/examples-tutorial-plan.md)
+- [CI matrix](docs/ci.md)
+- [clang and LLVM toolchain](docs/llvm-toolchain.md)
+- [Release workflow](docs/release-workflow.md)
+- [Release checklist](docs/release-checklist.md)
+- [Versioning policy](docs/versioning-policy.md)
+- [Changelog](CHANGELOG.md)
+- [Installation](docs/installation.md)
+- [Examples gallery](docs/examples-gallery.md)
+- [Runtime build integration](docs/runtime-build-integration.md)
+- [Formatting and linting](docs/formatting-linting.md)
+- [Coverage reporting](docs/coverage.md)
+- [Benchmark suite](docs/benchmarks.md)
+- [Standard library packaging](docs/standard-library-packaging.md)
 - [Laziness and STG plan](docs/laziness-and-stg-plan.md)
 - [Egglog Core optimizer plan](docs/egglog-core-optimizer-plan.md)
 
@@ -273,10 +344,14 @@ fixtures, and lazy semantics are implemented for the current executable subset.
 
 ## CI
 
-CI runs `cabal build all`, `cabal test all --test-options='--hide-successes'`,
-`cabal check`, `git diff --check`, and mandatory clang-backed end-to-end wet
-tests on pushes to `main`/`develop` and on pull requests. The Haskell 2010
-conformance suite is part of `cabal test all` and is not optional.
+CI runs `scripts/lint.sh`, `cabal build all`, `cabal test all
+--test-options='--hide-successes'`, `cabal check`, strict native smoke tests,
+installation/examples/standard-library/runtime-build smoke tests, mandatory
+clang-backed end-to-end wet tests, and a dedicated Ubuntu coverage report job on
+pushes to `main`/`develop` and on pull requests. CI also runs a dedicated
+Ubuntu benchmark job that validates representative compiler workflows and
+writes benchmark artifacts. The Haskell 2010 conformance suite is part of
+`cabal test all` and is not optional.
 
 ## License
 

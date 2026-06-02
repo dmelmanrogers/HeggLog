@@ -20722,7 +20722,7 @@ Notes:
 ## DOC-003 — Design document completion audit
 
 Status:
-- not started
+- complete
 
 Category:
 - docs
@@ -20751,9 +20751,9 @@ Files likely touched:
 - `docs/haskell2010-conformance-matrix.md`
 
 Acceptance criteria:
-- Design document completion audit is implemented, completed, or explicitly documented according to status `not started`.
-- All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
-- The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
+- Design document completion audit is complete and recorded in `docs/design-doc-completion-audit.md`.
+- README and the documentation index point to the audit and current release-quality status.
+- Documentation links, the Haskell 2010 backlog, and the conformance matrix validate cleanly.
 
 Required tests:
 - backlog validator
@@ -20763,16 +20763,17 @@ Required tests:
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/design-doc-completion-audit.md`
 - `docs/haskell2010-roadmap.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. `DOC-003` reconciles the indexed design documents against the current compiler claim, records the audit inputs and completion standard, and adds scripted Markdown link validation through `scripts/validate-doc-links.py`.
 
 ## DOC-004 — Examples and tutorial documentation plan
 
 Status:
-- not started
+- complete
 
 Category:
 - docs
@@ -20801,9 +20802,9 @@ Files likely touched:
 - `docs/haskell2010-conformance-matrix.md`
 
 Acceptance criteria:
-- Examples and tutorial documentation plan is implemented, completed, or explicitly documented according to status `not started`.
-- All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
-- The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
+- Examples and tutorial documentation plan is complete and recorded in `docs/examples-tutorial-plan.md`.
+- The plan defines audience, tutorial sequence, example tiers, gallery acceptance rules, and drift controls.
+- Documentation links, the Haskell 2010 backlog, and the conformance matrix validate cleanly.
 
 Required tests:
 - backlog validator
@@ -20813,16 +20814,17 @@ Required tests:
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/examples-tutorial-plan.md`
 - `docs/haskell2010-roadmap.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. `DOC-004` establishes the example/tutorial documentation structure and explicitly leaves the concrete curated gallery to `REL-006`.
 
 ## REL-001 — CI matrix
 
 Status:
-- in progress
+- complete
 
 Category:
 - release
@@ -20851,27 +20853,29 @@ Files likely touched:
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- CI matrix is implemented, completed, or explicitly documented according to status `in progress`.
-- All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
-- The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
+- CI matrix is implemented in `.github/workflows/ci.yml` and documented in `docs/ci.md`.
+- The matrix runs Linux and macOS legs with GHC 9.10.1, Cabal 3.12.1.0, clang, LLVM, `lli`, and `llvm-as`.
+- Local workflow-shape validation, documentation links, backlog validation, and conformance matrix validation pass.
 
 Required tests:
 - CI matrix run
 - fresh checkout smoke test
 - release checklist validation
+- `python3 scripts/validate-ci-matrix.py`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/ci.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. The CI workflow now has a docs/tracker gate and a two-platform native build/test matrix. `scripts/validate-ci-matrix.py` locks the required workflow shape locally.
 
 ## REL-002 — clang/LLVM toolchain installation docs
 
 Status:
-- in progress
+- complete
 
 Category:
 - release
@@ -20900,27 +20904,29 @@ Files likely touched:
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- clang/LLVM toolchain installation docs is implemented, completed, or explicitly documented according to status `in progress`.
-- All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
-- The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
+- clang/LLVM toolchain installation docs are complete in `docs/llvm-toolchain.md`.
+- `scripts/check-native-toolchain.sh` verifies `clang`, `llvm-as`, and `lli` and is used by CI, strict smoke tests, and mandatory wet tests.
+- Local toolchain validation, documentation links, CI workflow validation, backlog validation, and conformance matrix validation pass.
 
 Required tests:
 - CI matrix run
 - fresh checkout smoke test
 - release checklist validation
+- `scripts/check-native-toolchain.sh`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/llvm-toolchain.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. Native release validation now has a shared toolchain probe and documented macOS/Ubuntu installation commands for `clang`, `llvm-as`, and `lli`.
 
 ## REL-003 — release workflow
 
 Status:
-- not started
+- complete
 
 Category:
 - release
@@ -20949,27 +20955,30 @@ Files likely touched:
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- release workflow is implemented, completed, or explicitly documented according to status `not started`.
-- All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
-- The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
+- Release workflow is documented in `docs/release-workflow.md`.
+- `scripts/release-check.sh` is executable and runs the release-quality validation gate.
+- Shell syntax, toolchain validation, documentation links, backlog validation, conformance matrix validation, CI workflow validation, package checks, full tests, smoke tests, and wet tests pass.
 
 Required tests:
 - CI matrix run
 - fresh checkout smoke test
 - release checklist validation
+- `bash -n scripts/release-check.sh`
+- `scripts/release-check.sh`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/release-workflow.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. The release workflow now has a documented human procedure and an executable release gate in `scripts/release-check.sh`.
 
 ## REL-004 — installation instructions
 
 Status:
-- not started
+- complete
 
 Category:
 - release
@@ -20998,22 +21007,24 @@ Files likely touched:
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- installation instructions is implemented, completed, or explicitly documented according to status `not started`.
-- All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
-- The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
+- Installation instructions are complete in `docs/installation.md`.
+- `scripts/install-smoke-test.sh` installs `hegglog` into an isolated temporary prefix and verifies the installed binary can check, compile, and run a Haskell 2010 example.
+- Install smoke, CI workflow validation, documentation links, backlog validation, and conformance matrix validation pass.
 
 Required tests:
 - CI matrix run
 - fresh checkout smoke test
 - release checklist validation
+- `scripts/install-smoke-test.sh`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/installation.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. Source installation is documented and covered by an isolated install smoke test that is also wired into CI and the release gate.
 
 ## REL-005 — docs index
 
@@ -21067,7 +21078,7 @@ Notes:
 ## REL-006 — examples gallery
 
 Status:
-- not started
+- complete
 
 Category:
 - release
@@ -21096,27 +21107,30 @@ Files likely touched:
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- examples gallery is implemented, completed, or explicitly documented according to status `not started`.
-- All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
-- The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
+- Examples gallery is complete in `docs/examples-gallery.md`.
+- Curated user-facing Haskell 2010 examples live under `examples/haskell2010/` and cover laziness, recursion, IO/Show, typeclass dictionaries, standard-library imports, and multi-module compilation.
+- Gallery validation, gallery smoke, documentation links, CI workflow validation, backlog validation, and conformance matrix validation pass.
 
 Required tests:
 - CI matrix run
 - fresh checkout smoke test
 - release checklist validation
+- `python3 scripts/validate-examples-gallery.py`
+- `scripts/examples-gallery-smoke.sh`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/examples-gallery.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. The examples gallery is backed by committed curated examples, a structural validator, and a public-CLI smoke test wired into CI and the release gate.
 
 ## REL-007 — standard library packaging
 
 Status:
-- not started
+- complete
 
 Category:
 - release
@@ -21145,27 +21159,29 @@ Files likely touched:
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- standard library packaging is implemented, completed, or explicitly documented according to status `not started`.
-- All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
-- The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
+- Standard library packaging is documented in `docs/standard-library-packaging.md`.
+- `scripts/validate-standard-library-packaging.sh` verifies every advertised standard-library module imports through the public `hegglog check` path.
+- Standard-library packaging validation, documentation links, CI workflow validation, backlog validation, and conformance matrix validation pass.
 
 Required tests:
 - CI matrix run
 - fresh checkout smoke test
 - release checklist validation
+- `scripts/validate-standard-library-packaging.sh`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/standard-library-packaging.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. The standard library package boundary is documented and validated by importing all advertised modules through the public compiler path.
 
 ## REL-008 — runtime build integration
 
 Status:
-- in progress
+- complete
 
 Category:
 - release
@@ -21194,27 +21210,29 @@ Files likely touched:
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- runtime build integration is implemented, completed, or explicitly documented according to status `in progress`.
-- All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
-- The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
+- Runtime build integration is documented in `docs/runtime-build-integration.md`.
+- `scripts/runtime-build-smoke.sh` verifies native executable creation, kept LLVM/object intermediates, runtime markers, and process/runtime globals.
+- Runtime build smoke, documentation links, CI workflow validation, backlog validation, and conformance matrix validation pass.
 
 Required tests:
 - CI matrix run
 - fresh checkout smoke test
 - release checklist validation
+- `scripts/runtime-build-smoke.sh`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/runtime-build-integration.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. Runtime build integration is covered by a public CLI smoke test that compiles through the native runtime path and validates kept LLVM/object intermediates.
 
 ## REL-009 — formatting/linting
 
 Status:
-- not started
+- complete
 
 Category:
 - release
@@ -21243,27 +21261,29 @@ Files likely touched:
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- formatting/linting is implemented, completed, or explicitly documented according to status `not started`.
-- All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
-- The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
+- Formatting/linting policy is documented in `docs/formatting-linting.md`.
+- `scripts/lint.sh` checks shell syntax/executability, Python syntax, docs links, tracker consistency, conformance matrix consistency, CI workflow shape, examples gallery references, whitespace, package metadata, and warning-clean builds.
+- Lint gate, documentation links, CI workflow validation, backlog validation, and conformance matrix validation pass.
 
 Required tests:
 - CI matrix run
 - fresh checkout smoke test
 - release checklist validation
+- `scripts/lint.sh`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/formatting-linting.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. The lint gate is executable, documented, wired into CI and release validation, and passed locally.
 
 ## REL-010 — coverage reporting
 
 Status:
-- not started
+- complete
 
 Category:
 - release
@@ -21275,7 +21295,7 @@ Blocks:
 - none
 
 Scope:
-- Deliver coverage reporting for Release quality while preserving the current .hg substrate and the documented Haskell 2010 executable-subset behavior. Keep the work behind the IR/API boundary named by this category and update conformance status rather than claiming broader support.
+- Deliver coverage reporting for Release quality while preserving the current .hg substrate and the documented Haskell 2010 executable-subset behavior. Coverage now runs through Cabal HPC against the internal `hegglog` library and full `hegglog-test` suite, with stable copied artifacts under `.context/coverage`.
 
 Non-goals:
 - Do not weaken existing .hg behavior or tests.
@@ -21289,30 +21309,37 @@ Files likely touched:
 - `scripts/`
 - `README.md`
 - `docs/index.md`
+- `docs/coverage.md`
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- coverage reporting is implemented, completed, or explicitly documented according to status `not started`.
+- `scripts/coverage-report.sh` runs `cabal test hegglog-test --enable-coverage --test-options='--hide-successes'`, verifies the Cabal HTML and `.tix` artifacts, copies them into `.context/coverage`, and writes a summary with program totals.
+- The Cabal package has a real library/executable/test shape so coverage measures compiler modules through the library boundary rather than duplicate ad hoc source builds.
+- CI includes a dedicated Ubuntu coverage job, and `scripts/release-check.sh` runs coverage reporting as part of release validation.
 - All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
 - The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
 
 Required tests:
-- CI matrix run
-- fresh checkout smoke test
-- release checklist validation
+- `cabal build lib:hegglog`
+- `cabal build exe:hegglog`
+- `cabal test hegglog-test --test-options='--hide-successes'`
+- `cabal test hegglog-test --enable-coverage --test-options='--hide-successes'`
+- `scripts/coverage-report.sh`
+- `python3 scripts/validate-ci-matrix.py`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/coverage.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. Coverage passed locally, generated Cabal HPC HTML and `.tix` artifacts, and is wired into CI and release validation.
 
 ## REL-011 — benchmark suite
 
 Status:
-- not started
+- complete
 
 Category:
 - release
@@ -21324,7 +21351,7 @@ Blocks:
 - none
 
 Scope:
-- Deliver benchmark suite for Release quality while preserving the current .hg substrate and the documented Haskell 2010 executable-subset behavior. Keep the work behind the IR/API boundary named by this category and update conformance status rather than claiming broader support.
+- Deliver benchmark suite for Release quality while preserving the current .hg substrate and the documented Haskell 2010 executable-subset behavior. The suite builds `exe:hegglog`, resolves the executable with `cabal list-bin`, runs representative Haskell 2010 compiler workflows, validates observable output, and writes JSON/Markdown artifacts under `.context/benchmarks`.
 
 Non-goals:
 - Do not weaken existing .hg behavior or tests.
@@ -21338,30 +21365,36 @@ Files likely touched:
 - `scripts/`
 - `README.md`
 - `docs/index.md`
+- `docs/benchmarks.md`
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- benchmark suite is implemented, completed, or explicitly documented according to status `not started`.
+- `scripts/benchmark.py` measures fixed workloads for check, emit-core, run, native compile, native executable execution, report, and module-graph validation.
+- Each benchmark validates exit status, stdout, and stderr expectations before recording timing data.
+- Benchmark JSON and Markdown summaries are written to `.context/benchmarks`.
+- CI and `scripts/release-check.sh` run the benchmark suite with one measured iteration.
 - All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
 - The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
 
 Required tests:
-- CI matrix run
-- fresh checkout smoke test
-- release checklist validation
+- `scripts/benchmark.py --iterations 1`
+- `python3 scripts/validate-ci-matrix.py`
+- `python3 scripts/validate-doc-links.py`
+- `python3 scripts/validate-haskell2010-todo.py`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/benchmarks.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. The benchmark suite validates representative compiler workflows while recording release-comparable timing artifacts.
 
 ## REL-012 — release checklist
 
 Status:
-- not started
+- complete
 
 Category:
 - release
@@ -21373,7 +21406,7 @@ Blocks:
 - none
 
 Scope:
-- Deliver release checklist for Release quality while preserving the current .hg substrate and the documented Haskell 2010 executable-subset behavior. Keep the work behind the IR/API boundary named by this category and update conformance status rather than claiming broader support.
+- Deliver release checklist for Release quality while preserving the current .hg substrate and the documented Haskell 2010 executable-subset behavior. The checklist now captures release preconditions, required local commands, release artifacts, review items, and a strict failure policy.
 
 Non-goals:
 - Do not weaken existing .hg behavior or tests.
@@ -21387,30 +21420,38 @@ Files likely touched:
 - `scripts/`
 - `README.md`
 - `docs/index.md`
+- `docs/release-checklist.md`
+- `docs/release-workflow.md`
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- release checklist is implemented, completed, or explicitly documented according to status `not started`.
+- `docs/release-checklist.md` lists the required release commands, artifacts, review checks, and failure policy.
+- `scripts/validate-release-checklist.py` validates that the checklist and `scripts/release-check.sh` stay aligned on mandatory commands and artifacts.
+- `scripts/lint.sh` runs release checklist validation.
+- `scripts/release-check.sh` generates a Cabal source distribution after mandatory wet tests.
 - All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
 - The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
 
 Required tests:
-- CI matrix run
-- fresh checkout smoke test
-- release checklist validation
+- `python3 scripts/validate-release-checklist.py`
+- `python3 scripts/validate-doc-links.py`
+- `python3 scripts/validate-haskell2010-todo.py`
+- `cabal sdist all`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/release-checklist.md`
+- `docs/release-workflow.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. Release checklist validation is automated and the release gate now includes source distribution generation.
 
 ## REL-013 — versioning policy
 
 Status:
-- not started
+- complete
 
 Category:
 - release
@@ -21422,7 +21463,7 @@ Blocks:
 - none
 
 Scope:
-- Deliver versioning policy for Release quality while preserving the current .hg substrate and the documented Haskell 2010 executable-subset behavior. Keep the work behind the IR/API boundary named by this category and update conformance status rather than claiming broader support.
+- Deliver versioning policy for Release quality while preserving the current .hg substrate and the documented Haskell 2010 executable-subset behavior. The project now documents a Cabal/PVP-compatible four-component version policy, release tag format, increment rules, changelog alignment, and validation.
 
 Non-goals:
 - Do not weaken existing .hg behavior or tests.
@@ -21436,30 +21477,39 @@ Files likely touched:
 - `scripts/`
 - `README.md`
 - `docs/index.md`
+- `docs/versioning-policy.md`
+- `docs/release-checklist.md`
+- `docs/release-workflow.md`
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- versioning policy is implemented, completed, or explicitly documented according to status `not started`.
+- `docs/versioning-policy.md` defines the authoritative Cabal package version, four-component version format, increment rules, release tag format, and changelog alignment requirement.
+- `scripts/validate-versioning.py` validates the Cabal version format and policy alignment.
+- `scripts/lint.sh` runs versioning validation.
 - All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
 - The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
 
 Required tests:
-- CI matrix run
-- fresh checkout smoke test
-- release checklist validation
+- `python3 scripts/validate-versioning.py`
+- `python3 scripts/validate-release-checklist.py`
+- `python3 scripts/validate-doc-links.py`
+- `python3 scripts/validate-haskell2010-todo.py`
 
 Documentation updates:
 - `README.md`
 - `docs/index.md`
+- `docs/versioning-policy.md`
+- `docs/release-checklist.md`
+- `docs/release-workflow.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. Versioning policy validation is automated through lint and release validation.
 
 ## REL-014 — changelog
 
 Status:
-- not started
+- complete
 
 Category:
 - release
@@ -21471,7 +21521,7 @@ Blocks:
 - none
 
 Scope:
-- Deliver changelog for Release quality while preserving the current .hg substrate and the documented Haskell 2010 executable-subset behavior. Keep the work behind the IR/API boundary named by this category and update conformance status rather than claiming broader support.
+- Deliver changelog for Release quality while preserving the current .hg substrate and the documented Haskell 2010 executable-subset behavior. The project now has a root `CHANGELOG.md` with a dated section matching the Cabal package version and release-quality changes.
 
 Non-goals:
 - Do not weaken existing .hg behavior or tests.
@@ -21483,24 +21533,33 @@ Non-goals:
 Files likely touched:
 - `.github/workflows/ci.yml`
 - `scripts/`
+- `CHANGELOG.md`
 - `README.md`
 - `docs/index.md`
+- `docs/versioning-policy.md`
+- `docs/release-checklist.md`
 - `docs/haskell2010-todo.md`
 
 Acceptance criteria:
-- changelog is implemented, completed, or explicitly documented according to status `not started`.
+- `CHANGELOG.md` contains a dated `1.1.0.0` section with added, changed, and validation summaries.
+- `scripts/validate-versioning.py` requires a dated changelog section matching the Cabal package version.
+- README, docs index, versioning policy, and release checklist link or reference the changelog.
 - All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.
 - The Haskell 2010 conformance matrix points to this task for implemented work or explicit remaining gaps.
 
 Required tests:
-- CI matrix run
-- fresh checkout smoke test
-- release checklist validation
+- `python3 scripts/validate-versioning.py`
+- `python3 scripts/validate-release-checklist.py`
+- `python3 scripts/validate-doc-links.py`
+- `python3 scripts/validate-haskell2010-todo.py`
 
 Documentation updates:
+- `CHANGELOG.md`
 - `README.md`
 - `docs/index.md`
+- `docs/versioning-policy.md`
+- `docs/release-checklist.md`
 - `docs/haskell2010-todo.md`
 
 Notes:
-- Milestone M20 (Release quality). Status reflects the codebase after commit 0043a2d and should be revised whenever implementation or conformance coverage changes.
+- Complete. Changelog validation is enforced through versioning validation and lint.
