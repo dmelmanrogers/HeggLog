@@ -1,6 +1,6 @@
-# HeggLog
+# Haskell Compiler
 
-HeggLog is a Haskell 2010 native compiler project implemented in Haskell. The
+This is a Haskell 2010 native compiler project implemented in Haskell. The
 current repository contains a working native compiler for a strict `.hg` subset,
 including Egglog-inspired optimization, LLVM IR generation, native executable
 output, and end-to-end wet tests. That compiler is the substrate for the active
