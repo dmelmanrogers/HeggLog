@@ -1,9 +1,9 @@
-HeggLog compile mode
+Haskell Compiler compile mode
 
 usage:
-  hegglog compile FILE --emit-llvm [-o FILE.ll] [--no-egglog] [--run-llvm] [dump options]
-  hegglog compile FILE -o PROGRAM [--no-egglog] [--run] [dump options]
-  hegglog FILE --emit-llvm [-o FILE.ll] [--no-egglog] [--run-llvm] [dump options]
+  haskell-compiler compile FILE --emit-llvm [-o FILE.ll] [--no-egglog] [--run-llvm] [dump options]
+  haskell-compiler compile FILE -o PROGRAM [--no-egglog] [--run] [dump options]
+  haskell-compiler FILE --emit-llvm [-o FILE.ll] [--no-egglog] [--run-llvm] [dump options]
 
 options:
   --emit-llvm
@@ -19,7 +19,7 @@ options:
   --strict-egglog
       Require Egglog optimization support instead of falling back to unoptimized output.
   --keep-intermediates
-      Preserve generated LLVM and native object intermediates under .context/hegglog/intermediates. Native run mode also preserves its temporary executable there.
+      Preserve generated LLVM and native object intermediates under .context/haskell-compiler/intermediates. Native run mode also preserves its temporary executable there.
   -i, --import-path PATH
       Add a source module import search directory. May be repeated; the root module directory is searched first.
   --dump-core

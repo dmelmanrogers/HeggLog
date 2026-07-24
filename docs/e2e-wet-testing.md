@@ -1,8 +1,8 @@
 # End-to-End Wet Testing
 
-HeggLog wet tests verify the compiler as an external program. The test harness
+Haskell Compiler wet tests verify the compiler as an external program. The test harness
 does not call internal compiler APIs and does not run `cabal run` for each
-case. It invokes the built `hegglog` executable as a subprocess, compiles real
+case. It invokes the built `haskell-compiler` executable as a subprocess, compiles real
 `.hg` files from disk, checks the produced artifacts, executes native binaries
 directly, and asserts exit code, stdout, and stderr behavior.
 
@@ -49,10 +49,10 @@ and notes/deviations.
 
 Successful cases assert that:
 
-- `hegglog compile SOURCE -o TMP/CASE` exits successfully.
+- `haskell-compiler compile SOURCE -o TMP/CASE` exits successfully.
 - The requested executable exists and has executable permissions.
 - Running the executable directly exits successfully.
-- Stdout exactly matches the expected value plus HeggLog's trailing newline.
+- Stdout exactly matches the expected value plus Haskell Compiler's trailing newline.
 - Stderr is empty.
 
 Runtime-error cases assert that:
@@ -83,14 +83,14 @@ Unsupported-documented Haskell 2010 conformance cases assert that:
 
 Emit-LLVM cases assert that:
 
-- `hegglog compile SOURCE --emit-llvm -o TMP/CASE.ll` succeeds.
+- `haskell-compiler compile SOURCE --emit-llvm -o TMP/CASE.ll` succeeds.
 - The `.ll` file exists, is nonempty, and contains `define` and `@main`.
 - `clang TMP/CASE.ll -o TMP/CASE_FROM_LLVM` succeeds.
 - Running the resulting executable matches native stdout, stderr, and exit code
   expectations.
 
 Report-mode comparisons assert that every successful source run through
-`hegglog SOURCE` contains a stable machine-readable line:
+`haskell-compiler SOURCE` contains a stable machine-readable line:
 
 ```text
 Result: <value>

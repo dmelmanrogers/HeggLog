@@ -575,7 +575,7 @@ fileExtension path =
 
 keptIntermediateDirectory :: FilePath
 keptIntermediateDirectory =
-  ".context" </> "hegglog" </> "intermediates"
+  ".context" </> "haskell-compiler" </> "intermediates"
 
 keptIntermediateBase :: FilePath -> String
 keptIntermediateBase path =
@@ -774,7 +774,7 @@ parentDirectory path =
 withTemporaryExecutable :: (FilePath -> IO a) -> IO a
 withTemporaryExecutable action = do
   tempDir <- getTemporaryDirectory
-  (outputPath, handle) <- openTempFile tempDir "hegglog-run"
+  (outputPath, handle) <- openTempFile tempDir "haskell-compiler-run"
   hClose handle
   action outputPath `finally` removeFileIfExists outputPath
 

@@ -103,7 +103,7 @@ errors, and broader IO remain future expansions.
 RTS-009 chooses process-lifetime
 allocation for this executable subset: generated STG LLVM routes heap-object,
 environment, constructor-field-array, and runtime string-buffer allocations
-through `hegglog_hs_alloc_process_lifetime`, which aborts on allocation failure
+through `haskell_compiler_hs_alloc_process_lifetime`, which aborts on allocation failure
 and does not free or collect objects before process exit. RTS-019 documents the
 corresponding leak/ownership contract: this retention is intentional for the
 current executable subset, all native heap allocation must stay behind the

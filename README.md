@@ -1,16 +1,21 @@
-# HeggLog
+# Haskell Compiler
 
-HeggLog is a Haskell 2010 native compiler project implemented in Haskell. The
-current repository contains a working native compiler for a strict `.hg` subset,
-including Egglog-inspired optimization, LLVM IR generation, native executable
-output, and end-to-end wet tests. That compiler is the substrate for the active
-Haskell 2010 compiler roadmap: layout-aware parsing, renaming, Hindley-Milner
-typechecking, typed Core, Egglog Core optimization, STG-like lazy lowering,
-runtime support, and LLVM machine-code output.
+Haskell Compiler is a Haskell 2010 native compiler project implemented in Haskell. The
+repository now contains two related compiler paths:
 
-The active target is Haskell 2010 source to native executables through LLVM and
-clang. Current `.hg` support is not Haskell 2010 and does not claim GHC
-compatibility.
+- the original strict `.hg` compiler substrate, still kept as a regression
+  baseline for parsing, typechecking, ANF, Egglog-inspired optimization, LLVM IR
+  generation, native executable output, and black-box wet tests
+- the active Haskell 2010 `.hs` compiler path, which parses, renames,
+  typechecks, lowers through typed Core and STG-like lazy IR, applies safe Core
+  optimization, emits LLVM, links with `clang`, and runs native executables for
+  the documented executable subset
+
+The project goal remains Haskell 2010 source to native executables through LLVM
+and clang. Current support is substantial but still scoped by the repository's
+documented conformance matrix and executable-subset tests; it does not claim GHC
+compatibility, package database compatibility, or arbitrary Hackage package
+support.
 
 ## Current Status
 
@@ -27,7 +32,7 @@ Implemented today for the current `.hg` compiler-supported subset:
   artifacts, verify stdout/stderr/exit codes, compare report-mode
   `Result: <value>` output, and compile selected emitted LLVM through `clang`
 
-Implemented today for the Haskell 2010 target:
+Implemented today for the Haskell 2010 compiler path:
 
 - layout-aware Haskell 2010 frontend
 - renamer, module graph loading, import search paths, imports, exports,
@@ -61,10 +66,15 @@ Implemented today for the Haskell 2010 target:
   conformance cases, exact native stdout checks, runtime-error checks,
   compile-error checks, and explicit unsupported-feature cases
 
-Remaining tracked work:
+Roadmap/tracker state:
 
-- release-quality documentation, CI, installation, packaging, coverage,
-  benchmarking, versioning, and changelog tasks in milestone M20
+- the numbered Haskell 2010 engineering tracker currently validates as complete
+  at 409/409 tasks
+- unsupported behavior is tracked by explicit conformance fixtures or
+  documentation rather than silent omissions
+- new work should be added as new tracker-numbered tasks before implementation,
+  especially when expanding the conformance matrix beyond the current native
+  executable subset
 
 The current compiler passes the documented Haskell 2010 conformance fixtures in
 the repository. Unsupported behavior is represented as explicit conformance
@@ -149,92 +159,92 @@ scripts/check-native-toolchain.sh
 Run current `.hg` report/interpreter mode:
 
 ```bash
-cabal run hegglog -- examples/test.hg
-cabal run hegglog -- report examples/test.hg
+cabal run haskell-compiler -- examples/test.hg
+cabal run haskell-compiler -- report examples/test.hg
 ```
 
 Emit a Haskell 2010 diagnostic/status report without native code generation:
 
 ```bash
-cabal run hegglog -- report test/e2e/programs/haskell2010/lazy-argument.hs
-cabal run hegglog -- report test/e2e/programs/haskell2010/lazy-argument.hs --no-egglog
+cabal run haskell-compiler -- report test/e2e/programs/haskell2010/lazy-argument.hs
+cabal run haskell-compiler -- report test/e2e/programs/haskell2010/lazy-argument.hs --no-egglog
 ```
 
-The top-level CLI accepts `hegglog --help`, `hegglog check --help`,
-`hegglog emit-core --help`, `hegglog emit-stg --help`, `hegglog run --help`,
-`hegglog compile --help`, and `hegglog report --help`. Help is printed to
+The top-level CLI accepts `haskell-compiler --help`, `haskell-compiler check --help`,
+`haskell-compiler emit-core --help`, `haskell-compiler emit-stg --help`, `haskell-compiler run --help`,
+`haskell-compiler compile --help`, and `haskell-compiler report --help`. Help is printed to
 stdout and is locked by exact public golden tests; malformed command lines
 print a scoped diagnostic and the relevant usage text to stderr.
 
 Check a supported source file without native code generation:
 
 ```bash
-cabal run hegglog -- check test/e2e/programs/haskell2010/lazy-argument.hs
+cabal run haskell-compiler -- check test/e2e/programs/haskell2010/lazy-argument.hs
 ```
 
 Dump stable intermediate IR while preserving command stdout:
 
 ```bash
-cabal run hegglog -- check test/e2e/programs/haskell2010/lazy-argument.hs --dump-core --dump-stg
-cabal run hegglog -- compile test/e2e/programs/haskell2010/lazy-argument.hs --emit-llvm --dump-optimized-core
-cabal run hegglog -- run test/e2e/programs/haskell2010/lazy-argument.hs --dump-stg
+cabal run haskell-compiler -- check test/e2e/programs/haskell2010/lazy-argument.hs --dump-core --dump-stg
+cabal run haskell-compiler -- compile test/e2e/programs/haskell2010/lazy-argument.hs --emit-llvm --dump-optimized-core
+cabal run haskell-compiler -- run test/e2e/programs/haskell2010/lazy-argument.hs --dump-stg
 ```
 
 Preserve generated intermediates for debugging:
 
 ```bash
-cabal run hegglog -- compile test/e2e/programs/haskell2010/lazy-argument.hs --emit-llvm --keep-intermediates
-cabal run hegglog -- run test/e2e/programs/haskell2010/lazy-argument.hs --keep-intermediates
-ls .context/hegglog/intermediates
+cabal run haskell-compiler -- compile test/e2e/programs/haskell2010/lazy-argument.hs --emit-llvm --keep-intermediates
+cabal run haskell-compiler -- run test/e2e/programs/haskell2010/lazy-argument.hs --keep-intermediates
+ls .context/haskell-compiler/intermediates
 ```
 
 Emit validated typed Haskell 2010 Core without LLVM or native code generation:
 
 ```bash
-cabal run hegglog -- emit-core test/e2e/programs/haskell2010/lazy-argument.hs --original --no-egglog
-cabal run hegglog -- emit-core test/e2e/programs/haskell2010/lazy-argument.hs --both -o /tmp/hegglog.core
+cabal run haskell-compiler -- emit-core test/e2e/programs/haskell2010/lazy-argument.hs --original --no-egglog
+cabal run haskell-compiler -- emit-core test/e2e/programs/haskell2010/lazy-argument.hs --both -o /tmp/haskell-compiler.core
 ```
 
 Emit validated Haskell 2010 STG without LLVM or native code generation:
 
 ```bash
-cabal run hegglog -- emit-stg test/e2e/programs/haskell2010/lazy-argument.hs --no-egglog
-cabal run hegglog -- emit-stg test/e2e/programs/haskell2010/lazy-argument.hs -o /tmp/hegglog.stg
+cabal run haskell-compiler -- emit-stg test/e2e/programs/haskell2010/lazy-argument.hs --no-egglog
+cabal run haskell-compiler -- emit-stg test/e2e/programs/haskell2010/lazy-argument.hs -o /tmp/haskell-compiler.stg
 ```
 
 Compile and run a supported source file through a temporary native executable:
 
 ```bash
-cabal run hegglog -- run test/e2e/programs/haskell2010/lazy-argument.hs
+cabal run haskell-compiler -- run test/e2e/programs/haskell2010/lazy-argument.hs
 # 1
 ```
 
 Compile a current supported `.hg` program to a native executable:
 
 ```bash
-cabal run hegglog -- compile examples/llvm/arithmetic.hg -o /tmp/hegglog-arithmetic
-/tmp/hegglog-arithmetic
+cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg -o /tmp/haskell-compiler-arithmetic
+/tmp/haskell-compiler-arithmetic
 # 14
 ```
 
 Compile a supported Haskell 2010 `.hs` program to a native executable:
 
 ```bash
-cabal run hegglog -- compile test/e2e/programs/haskell2010/lazy-argument.hs -o /tmp/hegglog-hs
-/tmp/hegglog-hs
+cabal run haskell-compiler -- compile test/e2e/programs/haskell2010/lazy-argument.hs -o /tmp/haskell-compiler-hs
+/tmp/haskell-compiler-hs
 # 1
 ```
 
 Emit LLVM IR instead of a native executable:
 
 ```bash
-cabal run hegglog -- compile examples/llvm/arithmetic.hg --emit-llvm -o /tmp/hegglog-arithmetic.ll
+cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg --emit-llvm -o /tmp/haskell-compiler-arithmetic.ll
 ```
 
 Compile without Egglog optimization:
 
 ```bash
-cabal run hegglog -- compile examples/llvm/division.hg -o /tmp/hegglog-division --no-egglog
+cabal run haskell-compiler -- compile examples/llvm/division.hg -o /tmp/haskell-compiler-division --no-egglog
 ```
 
 The same `--no-egglog` flag disables the Haskell 2010 Core optimizer for `.hs`
@@ -281,17 +291,18 @@ Full documentation index:
 | Area | Status |
 | --- | --- |
 | Current `.hg` strict subset | Implemented and tested. |
-| Haskell 2010 parser/layout | Implemented as an isolated parser/layout frontend and parser-tested; connected to the executable `.hs` compile path. |
-| Haskell 2010 renamer/modules | Implemented as an isolated unique-name pass with module graph loading, export/import filtering, qualified aliases, hiding, `Thing(..)` children, and root-module `main` selection for the executable subset. |
+| Haskell 2010 parser/layout | Implemented as an isolated parser/layout frontend, parser-tested, and connected to the executable `.hs` compile path. |
+| Haskell 2010 renamer/modules | Implemented as an isolated unique-name pass with module graph loading, search paths, export/import filtering, qualified aliases, hiding, `Thing(..)` children, implicit/explicit Prelude behavior, instance import/export movement, and root-module `main` selection for the executable subset. |
 | Haskell 2010 typed Core | Implemented as a typed IR with validator, free-variable analysis, substitution, pretty-printer, and source generation for the executable subset. |
-| Haskell 2010 typechecker/desugarer | Implemented for explicit signatures, HM polymorphism, functions, lambdas, application, `let`, `if`, cases, ADTs, lists/tuples, recursion, user-defined class dictionaries, built-in Prelude data, generated Prelude list functions, primitive `/`, dictionary-backed `Eq`/`Ord`/`Num`/`Show` methods, numeric defaulting, guards/as-patterns, module imports, and the first IO printing slice. |
-| Haskell 2010 Core reference evaluator | Implemented for validating typed Core with lazy let/function/constructor-field thunks, erased Core type abstraction/application, Bool/user/list/tuple/Prelude-data case execution, generated Prelude functions, user and built-in class dictionary calls, IO output actions, checked `Int` primitives, and structured runtime errors. |
-| Haskell 2010 STG/lazy runtime | Implemented as an isolated STG-like IR, validator, pure heap evaluator, Core-to-STG lowering, and boxed LLVM/native runtime for the current executable subset, including thunks, enter/apply, constructor dispatch, dictionary constructor/selector execution, IO output actions, checked primitives, and native wet tests. |
-| Haskell 2010 conformance baseline | Implemented as the mandatory `haskell2010-conformance-test` Cabal suite. It reads `test/haskell2010/conformance/manifest.json`, invokes the built `hegglog` executable as a subprocess, compiles and runs native artifacts directly, checks exact stdout, and verifies runtime-error, compile-error, and unsupported-documented cases. |
-| LLVM/native backend | Implemented for the current `.hg` supported subset. |
+| Haskell 2010 typechecker/desugarer | Implemented for explicit signatures, HM polymorphism, functions, lambdas, application, `let`/`where`, `if`, cases, guards, as-patterns, lazy patterns, ADTs, records, newtypes, lists/tuples, recursion, user-defined class dictionaries, deriving for supported classes, Report-shaped `Show`/`Read`, numeric defaulting, standard-library module interfaces, IO/do-notation, module imports, and FFI signature validation for the supported ABI slice. |
+| Haskell 2010 Core reference evaluator | Implemented for validating typed Core with lazy let/function/constructor-field thunks, erased Core type abstraction/application, Bool/user/list/tuple/Prelude-data case execution, generated Prelude/library functions, user and built-in class dictionary calls, IO actions including input/error behavior, checked numeric primitives, structured runtime errors, and source attribution. |
+| Haskell 2010 STG/lazy runtime | Implemented as an isolated STG-like IR, validator, heap evaluator, Core-to-STG lowering, and boxed LLVM/native runtime for the current executable subset, including thunks, enter/apply, constructor dispatch, dictionary execution, IO actions, checked primitives, foreign-call/export metadata, and native wet tests. |
+| Haskell 2010 conformance baseline | Implemented as the mandatory `haskell2010-conformance-test` Cabal suite. It reads `test/haskell2010/conformance/manifest.json`, invokes the built `haskell-compiler` executable as a subprocess, compiles and runs native artifacts directly, checks exact stdout, and verifies runtime-error, compile-error, and unsupported-documented cases. |
+| LLVM/native backend | Implemented for the current `.hg` supported subset and the documented Haskell 2010 executable subset, including native IO, libraries, FFI imports/exports, runtime helpers, and explicit native link inputs. |
 | Egglog ANF backend | Implemented for the current `.hg` supported subset. |
-| Egglog Core optimizer | Implemented for safe Haskell 2010 Core fragments using typed Core validation, provenance, and optimized/unoptimized native agreement tests. Current rewrites cover Core-0 `Int`/`Bool` fragments plus known literal and saturated known-constructor case/projection rewrites. |
+| Egglog Core optimizer | Implemented for safe Haskell 2010 Core fragments using typed Core validation, provenance, totality/no-error/demand/strictness facts, known-constructor rewrites, known-dictionary facts, dictionary simplification, and optimized/unoptimized native agreement tests. |
 | Native wet tests | Implemented for the current `.hg` native compiler baseline and the Haskell 2010 executable native path, including default Egglog and `--no-egglog` modes. |
+| Release engineering | Implemented and documented for the current repo shape: CI matrix, LLVM/clang toolchain docs, install instructions, examples gallery, standard-library packaging docs, runtime build smoke tests, linting, coverage reporting, benchmarks, release workflow, release checklist, versioning policy, and changelog. |
 
 ## Current `.hg` Language Support
 
@@ -316,14 +327,18 @@ programs with printable `Int` or `Bool` roots, top-level first-order calls,
 lambda-lifted non-capturing functions, and closure-converted local function
 values. It rejects unsupported targets structurally.
 
-HeggLog now supports same-directory whole-program Haskell 2010
-modules/imports, the documented executable pattern-matching subset, built-in
-`Show Int`/`Show Bool`, numeric defaulting for the supported executable class
-slice, and `main :: IO ()` for stdout-oriented programs. It does not yet
-support the full class hierarchy/default methods/deriving, package databases,
-irrefutable/lazy pattern semantics, broad `Show`/`String` interop, or broad
-IO/Monad libraries. Those unsupported areas now have explicit conformance
-fixtures, and lazy semantics are implemented for the current executable subset.
+Haskell Compiler now supports whole-program Haskell 2010 source graphs through
+explicit files and import search paths, the documented executable
+pattern-matching subset, user and Prelude-backed classes, superclass/default
+method behavior, supported deriving, real `Char`/`String` list representation,
+Report-shaped `Show` and `Read`, broad generated Prelude/library interfaces,
+`main :: IO ()`, `putStrLn`, `getLine`, `print`, `System.IO`,
+`System.Environment`, `System.Exit`, and the supported Haskell 2010 FFI surface.
+
+The compiler still makes no claim to GHC package databases, persistent
+interface-file separate compilation, arbitrary third-party package builds, or
+behavior outside the documented native conformance matrix. Unsupported or
+out-of-scope behavior should remain explicit in docs and fixtures.
 
 ## Existing Specs
 
@@ -355,4 +370,4 @@ writes benchmark artifacts. The Haskell 2010 conformance suite is part of
 
 ## License
 
-HeggLog is licensed under the MIT License. See [LICENSE](LICENSE).
+Haskell Compiler is licensed under the MIT License. See [LICENSE](LICENSE).

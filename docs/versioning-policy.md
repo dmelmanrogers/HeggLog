@@ -1,6 +1,6 @@
 # Versioning Policy
 
-HeggLog uses the Cabal package version as the authoritative release version.
+Haskell Compiler uses the Cabal package version as the authoritative release version.
 The current package version is `1.1.0.0`.
 
 ## Version Format

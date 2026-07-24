@@ -6,9 +6,9 @@ import Foreign.Marshal.Utils (maybeNew, maybePeek, maybeWith)
 import Foreign.Ptr (FunPtr, Ptr, castFunPtrToPtr, castPtr, castPtrToFunPtr, nullFunPtr, nullPtr)
 import System.IO.Error (catch, ioeGetErrorString)
 
-foreign import ccall "&hegglog_ffi_global_i64" c_global :: Ptr Int
-foreign import ccall "hegglog_ffi_read_i64_ptr" c_read :: Ptr Int -> IO Int
-foreign import ccall "hegglog_ffi_write_i64_ptr" c_write :: Ptr Int -> Int -> IO ()
+foreign import ccall "&haskell_compiler_ffi_global_i64" c_global :: Ptr Int
+foreign import ccall "haskell_compiler_ffi_read_i64_ptr" c_read :: Ptr Int -> IO Int
+foreign import ccall "haskell_compiler_ffi_write_i64_ptr" c_write :: Ptr Int -> Int -> IO ()
 
 nullIntPtr :: Ptr Int
 nullIntPtr = nullPtr

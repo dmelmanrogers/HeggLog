@@ -1,8 +1,8 @@
-HeggLog report mode
+Haskell Compiler report mode
 
 usage:
-  hegglog report FILE [--no-egglog] [--strict-egglog] [-i PATH]
-  hegglog FILE
+  haskell-compiler report FILE [--no-egglog] [--strict-egglog] [-i PATH]
+  haskell-compiler FILE
 
 behavior:
   Emit a diagnostic/status report for a source file.

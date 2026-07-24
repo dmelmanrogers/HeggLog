@@ -556,7 +556,7 @@ evalPrimitive coreEnv op values =
     (PrimGetArgs, []) ->
       Right (CoreIO [] (CoreIOSuccess (coreList stringTy [])))
     (PrimGetProgName, []) ->
-      Right (CoreIO [] (CoreIOSuccess (coreStringList "hegglog")))
+      Right (CoreIO [] (CoreIOSuccess (coreStringList "haskell-compiler")))
     (PrimGetEnv, [nameValue]) ->
       coreStringText coreEnv nameValue >>= \nameText ->
         Right (CoreIO [] (CoreIOFailure (coreDoesNotExistIOError ("environment variable not found: " <> nameText))))

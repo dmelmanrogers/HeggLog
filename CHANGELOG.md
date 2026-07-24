@@ -1,7 +1,7 @@
 # Changelog
 
-All notable HeggLog release changes are recorded here. The Cabal package
-version in `hegglog.cabal` is the authoritative version for release tags and
+All notable Haskell Compiler release changes are recorded here. The Cabal package
+version in `haskell-compiler.cabal` is the authoritative version for release tags and
 changelog sections.
 
 ## 1.1.0.0 - 2026-06-02
@@ -24,7 +24,7 @@ changelog sections.
 
 ### Changed
 
-- Reorganized the Cabal package into a real `hegglog` library, an `app`
+- Reorganized the Cabal package into a real `haskell-compiler` library, an `app`
   executable entry point, and a test suite that depends on the library. This
   makes coverage meaningful and prevents executable/test builds from compiling
   duplicate source-module sets.
@@ -37,10 +37,10 @@ changelog sections.
 
 ### Validation
 
-- `cabal build lib:hegglog`
-- `cabal build exe:hegglog`
-- `cabal test hegglog-test --test-options='--hide-successes'`
-- `cabal test hegglog-test --enable-coverage --test-options='--hide-successes'`
+- `cabal build lib:haskell-compiler`
+- `cabal build exe:haskell-compiler`
+- `cabal test haskell-compiler-test --test-options='--hide-successes'`
+- `cabal test haskell-compiler-test --enable-coverage --test-options='--hide-successes'`
 - `scripts/coverage-report.sh`
 - `scripts/benchmark.py --iterations 1`
 - `python3 scripts/validate-ci-matrix.py`

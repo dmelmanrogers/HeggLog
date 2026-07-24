@@ -8,8 +8,8 @@ main :: IO ()
 main = do
   args <- getArgs
   progName <- getProgName
-  value <- getEnv "HEGGLOG_LIB011_ENV"
-  missing <- try (getEnv "HEGGLOG_LIB011_MISSING")
+  value <- getEnv "HASKELL_COMPILER_LIB011_ENV"
+  missing <- try (getEnv "HASKELL_COMPILER_LIB011_MISSING")
   print args
   putStrLn (if null progName then "empty" else "prog")
   putStrLn value

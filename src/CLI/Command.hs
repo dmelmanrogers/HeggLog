@@ -197,17 +197,17 @@ usageForTopic = \case
 generalUsage :: Text
 generalUsage =
   Text.unlines
-    [ "HeggLog compiler"
+    [ "Haskell Compiler"
     , ""
     , "usage:"
-    , "  hegglog FILE"
-    , "  hegglog check FILE [check options]"
-    , "  hegglog emit-core FILE [emit-core options]"
-    , "  hegglog emit-stg FILE [emit-stg options]"
-    , "  hegglog report FILE [report options]"
-    , "  hegglog run FILE [run options]"
-    , "  hegglog compile FILE [compile options]"
-    , "  hegglog FILE --emit-llvm [compile options]"
+    , "  haskell-compiler FILE"
+    , "  haskell-compiler check FILE [check options]"
+    , "  haskell-compiler emit-core FILE [emit-core options]"
+    , "  haskell-compiler emit-stg FILE [emit-stg options]"
+    , "  haskell-compiler report FILE [report options]"
+    , "  haskell-compiler run FILE [run options]"
+    , "  haskell-compiler compile FILE [compile options]"
+    , "  haskell-compiler FILE --emit-llvm [compile options]"
     , ""
     , "commands:"
     , "  FILE"
@@ -228,29 +228,29 @@ generalUsage =
     , "      Emit textual LLVM IR."
     , ""
     , "examples:"
-    , "  cabal run hegglog -- examples/test.hg"
-    , "  cabal run hegglog -- check test/e2e/programs/haskell2010/lazy-argument.hs"
-    , "  cabal run hegglog -- check test/e2e/programs/haskell2010/lazy-argument.hs --dump-core --dump-stg"
-    , "  cabal run hegglog -- emit-core test/e2e/programs/haskell2010/lazy-argument.hs"
-    , "  cabal run hegglog -- emit-stg test/e2e/programs/haskell2010/lazy-argument.hs"
-    , "  cabal run hegglog -- report examples/test.hg"
-    , "  cabal run hegglog -- report test/e2e/programs/haskell2010/lazy-argument.hs"
-    , "  cabal run hegglog -- run test/e2e/programs/haskell2010/lazy-argument.hs"
-    , "  cabal run hegglog -- run test/e2e/programs/haskell2010/lazy-argument.hs --keep-intermediates"
-    , "  cabal run hegglog -- compile examples/llvm/arithmetic.hg -o /tmp/hegglog-arithmetic"
-    , "  cabal run hegglog -- compile examples/llvm/arithmetic.hg -o /tmp/hegglog-arithmetic --run"
-    , "  cabal run hegglog -- compile examples/llvm/arithmetic.hg --emit-llvm -o /tmp/hegglog.ll"
+    , "  cabal run haskell-compiler -- examples/test.hg"
+    , "  cabal run haskell-compiler -- check test/e2e/programs/haskell2010/lazy-argument.hs"
+    , "  cabal run haskell-compiler -- check test/e2e/programs/haskell2010/lazy-argument.hs --dump-core --dump-stg"
+    , "  cabal run haskell-compiler -- emit-core test/e2e/programs/haskell2010/lazy-argument.hs"
+    , "  cabal run haskell-compiler -- emit-stg test/e2e/programs/haskell2010/lazy-argument.hs"
+    , "  cabal run haskell-compiler -- report examples/test.hg"
+    , "  cabal run haskell-compiler -- report test/e2e/programs/haskell2010/lazy-argument.hs"
+    , "  cabal run haskell-compiler -- run test/e2e/programs/haskell2010/lazy-argument.hs"
+    , "  cabal run haskell-compiler -- run test/e2e/programs/haskell2010/lazy-argument.hs --keep-intermediates"
+    , "  cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg -o /tmp/haskell-compiler-arithmetic"
+    , "  cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg -o /tmp/haskell-compiler-arithmetic --run"
+    , "  cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg --emit-llvm -o /tmp/haskell-compiler.ll"
     , ""
-    , "run `hegglog COMMAND --help` for command-specific options."
+    , "run `haskell-compiler COMMAND --help` for command-specific options."
     ]
 
 checkUsage :: Text
 checkUsage =
   Text.unlines
-    [ "HeggLog check mode"
+    [ "Haskell Compiler check mode"
     , ""
     , "usage:"
-    , "  hegglog check FILE [--no-egglog] [-i PATH] [dump options]"
+    , "  haskell-compiler check FILE [--no-egglog] [-i PATH] [dump options]"
     , ""
     , "behavior:"
     , "  Parse, rename, typecheck, and validate Core/STG without emitting LLVM IR, invoking clang, or requiring a `main` binding."
@@ -273,12 +273,12 @@ checkUsage =
 compileUsage :: Text
 compileUsage =
   Text.unlines
-    [ "HeggLog compile mode"
+    [ "Haskell Compiler compile mode"
     , ""
     , "usage:"
-    , "  hegglog compile FILE --emit-llvm [-o FILE.ll] [--no-egglog] [--run-llvm] [dump options]"
-    , "  hegglog compile FILE -o PROGRAM [--no-egglog] [--run] [dump options]"
-    , "  hegglog FILE --emit-llvm [-o FILE.ll] [--no-egglog] [--run-llvm] [dump options]"
+    , "  haskell-compiler compile FILE --emit-llvm [-o FILE.ll] [--no-egglog] [--run-llvm] [dump options]"
+    , "  haskell-compiler compile FILE -o PROGRAM [--no-egglog] [--run] [dump options]"
+    , "  haskell-compiler FILE --emit-llvm [-o FILE.ll] [--no-egglog] [--run-llvm] [dump options]"
     , ""
     , "options:"
     , "  --emit-llvm"
@@ -294,7 +294,7 @@ compileUsage =
     , "  --strict-egglog"
     , "      Require Egglog optimization support instead of falling back to unoptimized output."
     , "  --keep-intermediates"
-    , "      Preserve generated LLVM and native object intermediates under .context/hegglog/intermediates. Native run mode also preserves its temporary executable there."
+    , "      Preserve generated LLVM and native object intermediates under .context/haskell-compiler/intermediates. Native run mode also preserves its temporary executable there."
     , "  -i, --import-path PATH"
     , "      Add a source module import search directory. May be repeated; the root module directory is searched first."
     , "  --dump-core"
@@ -319,10 +319,10 @@ compileUsage =
 emitCoreUsage :: Text
 emitCoreUsage =
   Text.unlines
-    [ "HeggLog emit-core mode"
+    [ "Haskell Compiler emit-core mode"
     , ""
     , "usage:"
-    , "  hegglog emit-core FILE [--no-egglog] [--original|--optimized|--both] [-i PATH] [-o PATH]"
+    , "  haskell-compiler emit-core FILE [--no-egglog] [--original|--optimized|--both] [-i PATH] [-o PATH]"
     , ""
     , "behavior:"
     , "  Parse, rename, typecheck, optimize when enabled, and validate Core/STG; emit typed Haskell 2010 Core without LLVM or native codegen."
@@ -347,10 +347,10 @@ emitCoreUsage =
 emitSTGUsage :: Text
 emitSTGUsage =
   Text.unlines
-    [ "HeggLog emit-stg mode"
+    [ "Haskell Compiler emit-stg mode"
     , ""
     , "usage:"
-    , "  hegglog emit-stg FILE [--no-egglog] [-i PATH] [-o PATH]"
+    , "  haskell-compiler emit-stg FILE [--no-egglog] [-i PATH] [-o PATH]"
     , ""
     , "behavior:"
     , "  Parse, rename, typecheck, optimize Core when enabled, lower to STG, validate STG, and emit Haskell 2010 STG without LLVM or native codegen."
@@ -369,11 +369,11 @@ emitSTGUsage =
 reportUsage :: Text
 reportUsage =
   Text.unlines
-    [ "HeggLog report mode"
+    [ "Haskell Compiler report mode"
     , ""
     , "usage:"
-    , "  hegglog report FILE [--no-egglog] [--strict-egglog] [-i PATH]"
-    , "  hegglog FILE"
+    , "  haskell-compiler report FILE [--no-egglog] [--strict-egglog] [-i PATH]"
+    , "  haskell-compiler FILE"
     , ""
     , "behavior:"
     , "  Emit a diagnostic/status report for a source file."
@@ -392,10 +392,10 @@ reportUsage =
 runUsage :: Text
 runUsage =
   Text.unlines
-    [ "HeggLog run mode"
+    [ "Haskell Compiler run mode"
     , ""
     , "usage:"
-    , "  hegglog run FILE [--no-egglog] [-i PATH] [dump options] [native link options]"
+    , "  haskell-compiler run FILE [--no-egglog] [-i PATH] [dump options] [native link options]"
     , ""
     , "behavior:"
     , "  Compile FILE to a temporary native executable, run it, forward program stdout/stderr, and exit with the program status."
@@ -406,7 +406,7 @@ runUsage =
     , "  --strict-egglog"
     , "      Require Egglog optimization support instead of falling back to unoptimized output."
     , "  --keep-intermediates"
-    , "      Preserve generated LLVM, object, and temporary executable intermediates under .context/hegglog/intermediates."
+    , "      Preserve generated LLVM, object, and temporary executable intermediates under .context/haskell-compiler/intermediates."
     , "  -i, --import-path PATH"
     , "      Add a Haskell 2010 source module import search directory. May be repeated; the root module directory is searched first."
     , "  --dump-core"

@@ -2,15 +2,15 @@ module Main where
 
 import Foreign (ForeignPtr, FunPtr, Ptr, StablePtr, addForeignPtrFinalizer, castPtrToStablePtr, castStablePtrToPtr, deRefStablePtr, finalizeForeignPtr, freeStablePtr, newForeignPtr, newStablePtr, touchForeignPtr, withForeignPtr)
 
-foreign import ccall "&hegglog_ffi_global_i64" c_global :: Ptr Int
-foreign import ccall "&hegglog_ffi_count_i64_finalizer_one" c_finalizer_one :: FunPtr (Ptr Int -> IO ())
-foreign import ccall "&hegglog_ffi_count_i64_finalizer_two" c_finalizer_two :: FunPtr (Ptr Int -> IO ())
-foreign import ccall "hegglog_ffi_reset_finalizers" c_reset_finalizers :: IO ()
-foreign import ccall "hegglog_ffi_finalizer_total_value" c_finalizer_total :: IO Int
-foreign import ccall "hegglog_ffi_finalizer_order_value" c_finalizer_order :: IO Int
-foreign import ccall "hegglog_ffi_expect_i64" c_expect :: Int -> Int -> IO ()
-foreign import ccall "hegglog_ffi_read_i64_ptr" c_read :: Ptr Int -> IO Int
-foreign import ccall "hegglog_ffi_write_i64_ptr" c_write :: Ptr Int -> Int -> IO ()
+foreign import ccall "&haskell_compiler_ffi_global_i64" c_global :: Ptr Int
+foreign import ccall "&haskell_compiler_ffi_count_i64_finalizer_one" c_finalizer_one :: FunPtr (Ptr Int -> IO ())
+foreign import ccall "&haskell_compiler_ffi_count_i64_finalizer_two" c_finalizer_two :: FunPtr (Ptr Int -> IO ())
+foreign import ccall "haskell_compiler_ffi_reset_finalizers" c_reset_finalizers :: IO ()
+foreign import ccall "haskell_compiler_ffi_finalizer_total_value" c_finalizer_total :: IO Int
+foreign import ccall "haskell_compiler_ffi_finalizer_order_value" c_finalizer_order :: IO Int
+foreign import ccall "haskell_compiler_ffi_expect_i64" c_expect :: Int -> Int -> IO ()
+foreign import ccall "haskell_compiler_ffi_read_i64_ptr" c_read :: Ptr Int -> IO Int
+foreign import ccall "haskell_compiler_ffi_write_i64_ptr" c_write :: Ptr Int -> Int -> IO ()
 
 stableRoundTrip :: Int -> IO Int
 stableRoundTrip value = do

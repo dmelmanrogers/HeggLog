@@ -16,7 +16,7 @@ Required task validation also passed:
 ```bash
 cabal build all
 cabal check
-cabal test hegglog-test
+cabal test haskell-compiler-test
 cabal test haskell2010-conformance-test
 cabal test e2e-wet-test
 jq empty docs/haskell2010-todo.json test/haskell2010/conformance/manifest.json
@@ -79,7 +79,7 @@ lazy semi-closed `hGetContents`, `hIsEOF`, `hFileSize`, `hSetFileSize`,
 
 FFI-011 is now covered by the conformance/native path. Header-qualified static
 `ccall` imports preserve link metadata, C helper fixtures are linked through
-the `hegglog compile --link-object` path, and the unit suite covers LLVM link
+the `haskell-compiler compile --link-object` path, and the unit suite covers LLVM link
 metadata comments plus missing link-input diagnostics.
 
 FFI-012 is now covered by native unit and conformance paths. `freeHaskellFunPtr`

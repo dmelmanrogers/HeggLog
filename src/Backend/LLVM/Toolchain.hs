@@ -269,7 +269,7 @@ withTempLLVMFile llvmText action =
  where
   create = do
     tempDirectory <- getTemporaryDirectory
-    (path, handle) <- openTempFile tempDirectory "hegglog-native.ll"
+    (path, handle) <- openTempFile tempDirectory "haskell-compiler-native.ll"
     Text.IO.hPutStr handle llvmText
     hClose handle
     pure path

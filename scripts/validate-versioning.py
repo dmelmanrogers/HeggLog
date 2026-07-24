@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CABAL = ROOT / "hegglog.cabal"
+CABAL = ROOT / "haskell-compiler.cabal"
 POLICY = ROOT / "docs" / "versioning-policy.md"
 CHANGELOG = ROOT / "CHANGELOG.md"
 
@@ -30,7 +30,7 @@ def cabal_version() -> str:
     text = read(CABAL)
     match = re.search(r"^version:\s*([0-9]+(?:\.[0-9]+){3})\s*$", text, re.MULTILINE)
     if match is None:
-        fail("hegglog.cabal must use a four-component numeric version")
+        fail("haskell-compiler.cabal must use a four-component numeric version")
     version = match.group(1)
     if any(part != "0" and part.startswith("0") for part in version.split(".")):
         fail(f"version components must not use leading zeroes: {version}")

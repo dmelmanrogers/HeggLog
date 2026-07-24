@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the HeggLog release benchmark suite."""
+"""Run the Haskell Compiler release benchmark suite."""
 
 from __future__ import annotations
 
@@ -53,11 +53,11 @@ def require_success(label: str, completed: subprocess.CompletedProcess[str]) -> 
 
 
 def build_executable() -> Path:
-    build = run_command(["cabal", "build", "exe:hegglog"])
-    require_success("cabal build exe:hegglog", build)
+    build = run_command(["cabal", "build", "exe:haskell-compiler"])
+    require_success("cabal build exe:haskell-compiler", build)
 
-    list_bin = run_command(["cabal", "list-bin", "exe:hegglog"])
-    require_success("cabal list-bin exe:hegglog", list_bin)
+    list_bin = run_command(["cabal", "list-bin", "exe:haskell-compiler"])
+    require_success("cabal list-bin exe:haskell-compiler", list_bin)
     executable = Path(list_bin.stdout.strip())
     if not executable.is_file():
         fail(f"cabal list-bin returned missing executable: {executable}")
@@ -170,7 +170,7 @@ def write_outputs(output_dir: Path, result: dict[str, object]) -> None:
     json_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     lines = [
-        "# HeggLog Benchmark Summary",
+        "# Haskell Compiler Benchmark Summary",
         "",
         f"- Generated at: {result['generated_at']}",
         f"- Iterations: {result['iterations']}",

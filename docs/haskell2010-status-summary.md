@@ -2,7 +2,7 @@
 
 ## Active Target
 
-HeggLog is a Haskell 2010 native compiler project implemented in Haskell. The
+Haskell Compiler is a Haskell 2010 native compiler project implemented in Haskell. The
 active target is Haskell 2010 source compiled to native machine-code
 executables through LLVM and clang.
 
@@ -23,7 +23,7 @@ values when the root is printable.
 
 ## Current Haskell 2010 Compilation
 
-HeggLog now compiles the current Haskell 2010 executable subset from `.hs`
+Haskell Compiler now compiles the current Haskell 2010 executable subset from `.hs`
 source to native executables. The subset includes `Int`, `Bool`, functions,
 lazy lets and arguments, custom ADTs, polymorphic constructors, constructor
 cases, nested constructor patterns, newtype constructor expressions and
@@ -323,7 +323,7 @@ The boxed LLVM/native runtime path is implemented for the current executable
 subset, including ADT constructor objects, list/tuple/Prelude data constructor
 objects, lazy field projection, and type class dictionary values as ordinary
 constructor closures. Native STG heap allocations now pass through the
-`hegglog_hs_alloc_process_lifetime` runtime helper, making the current no-GC,
+`haskell_compiler_hs_alloc_process_lifetime` runtime helper, making the current no-GC,
 no-free ownership policy explicit and tested. The first IO action layer is
 implemented for
 line-oriented programs: STG can represent and evaluate IO output actions,

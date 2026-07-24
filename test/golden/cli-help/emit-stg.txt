@@ -1,7 +1,7 @@
-HeggLog emit-stg mode
+Haskell Compiler emit-stg mode
 
 usage:
-  hegglog emit-stg FILE [--no-egglog] [-i PATH] [-o PATH]
+  haskell-compiler emit-stg FILE [--no-egglog] [-i PATH] [-o PATH]
 
 behavior:
   Parse, rename, typecheck, optimize Core when enabled, lower to STG, validate STG, and emit Haskell 2010 STG without LLVM or native codegen.

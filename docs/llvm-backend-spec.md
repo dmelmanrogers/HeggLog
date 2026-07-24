@@ -1,6 +1,6 @@
 # LLVM Backend Specification
 
-This specification defines the current HeggLog LLVM backend contract for the
+This specification defines the current Haskell Compiler LLVM backend contract for the
 strict `.hg` compiler-supported subset. It is normative for the v0 backend
 fragment; `docs/llvm-backend.md` remains the operational guide for CLI use and
 toolchain workflow.
@@ -37,7 +37,7 @@ The LLVM source fragment is closed and first-order.
 
 Supported source forms:
 
-- unsigned decimal `Int` literals that fit in HeggLog `Int`
+- unsigned decimal `Int` literals that fit in Haskell Compiler `Int`
 - `Bool` literals
 - variables bound by `let`
 - nonrecursive `let`
@@ -70,9 +70,9 @@ defended by ANF and backend validators.
 
 ## Type Mapping
 
-HeggLog types map through Backend IR before LLVM:
+Haskell Compiler types map through Backend IR before LLVM:
 
-| HeggLog | Backend IR | LLVM |
+| Haskell Compiler | Backend IR | LLVM |
 | --- | --- | --- |
 | `Int` | `BI64` | `i64` |
 | `Bool` | `BI1` | `i1` |
@@ -192,7 +192,7 @@ after lowering.
 
 Generated modules contain:
 
-- comments describing HeggLog provenance and selected optimization status
+- comments describing Haskell Compiler provenance and selected optimization status
 - format-string globals for root printing
 - external declarations required by the generated program
 - zero or more top-level functions
@@ -203,7 +203,7 @@ Generated modules contain:
 Top-level functions use deterministic names:
 
 ```llvm
-define i64 @hegglog_fun_inc(i64 %arg_x) { ... }
+define i64 @haskell_compiler_fun_inc(i64 %arg_x) { ... }
 ```
 
 Source identifiers are escaped injectively before they are used as LLVM function
@@ -212,8 +212,8 @@ or parameter names, so distinct source names cannot collide after lowering.
 Root functions:
 
 ```llvm
-define i64 @hegglog_main_i64() { ... }
-define i1 @hegglog_main_i1() { ... }
+define i64 @haskell_compiler_main_i64() { ... }
+define i1 @haskell_compiler_main_i1() { ... }
 ```
 
 Only one root function is emitted per module, selected by root type. Top-level

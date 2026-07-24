@@ -1,8 +1,8 @@
-# HeggLog Roadmap: Haskell 2010 Native Compiler
+# Haskell Compiler Roadmap: Haskell 2010 Native Compiler
 
 ## Project Goal
 
-HeggLog is a Haskell 2010 native-code compiler project implemented in Haskell.
+Haskell Compiler is a Haskell 2010 native-code compiler project implemented in Haskell.
 The compiler's active target is Haskell 2010 source code compiled to real
 native machine-code executables through LLVM and clang.
 
@@ -38,7 +38,7 @@ Haskell 2010 source
 The primary success criterion is:
 
 ```bash
-hegglog compile Main.hs -o main
+haskell-compiler compile Main.hs -o main
 ./main
 ```
 
@@ -236,7 +236,7 @@ Deliverables:
 
 Acceptance criteria:
 
-- `hegglog compile Main.hs -o main` produces a native executable for Core-0
+- `haskell-compiler compile Main.hs -o main` produces a native executable for Core-0
   lazy programs
 - generated executable links runtime
 - lazy semantic wet tests pass
@@ -545,7 +545,7 @@ Egglog behavior is explicitly controllable with `--no-egglog` and
 instead of silently compiling unoptimized output.
 `compile` and `run` also support `--keep-intermediates`, preserving generated
 LLVM/object artifacts and run-mode temporary executables under
-`.context/hegglog/intermediates`.
+`.context/haskell-compiler/intermediates`.
 `compile` and `report` have scoped help, legacy report and legacy `FILE
 --emit-llvm` forms remain supported, and CLI unit/wet tests cover help, error,
 check, report, emit-core, emit-stg, strict Egglog, dump flags, kept intermediates, and run
@@ -555,13 +555,13 @@ The broader command set below remains tracked by the remaining CLI tasks.
 
 Commands:
 
-- `hegglog check Main.hs`
-- `hegglog run Main.hs`
-- `hegglog compile Main.hs -o main`
-- `hegglog report Main.hs`
-- `hegglog emit-core Main.hs`
-- `hegglog emit-stg Main.hs`
-- `hegglog emit-llvm Main.hs`
+- `haskell-compiler check Main.hs`
+- `haskell-compiler run Main.hs`
+- `haskell-compiler compile Main.hs -o main`
+- `haskell-compiler report Main.hs`
+- `haskell-compiler emit-core Main.hs`
+- `haskell-compiler emit-stg Main.hs`
+- `haskell-compiler emit-llvm Main.hs`
 
 Flags:
 
@@ -587,7 +587,7 @@ Status: baseline implemented. The project now has
 `haskell2010-conformance-test` Cabal suite. The baseline currently records 157
 fixtures: 111 native-success cases, 15 native-runtime-error cases, 29 compile-error
 cases, and 3 unsupported-documented cases. The suite invokes the built
-`hegglog` executable as a subprocess, compiles native-success cases to actual
+`haskell-compiler` executable as a subprocess, compiles native-success cases to actual
 executables, executes those artifacts directly, compares stdout exactly, checks
 runtime-error exits, checks compile-error diagnostics, links manifest-declared
 C helper files for FFI fixtures, and fails if documented unsupported cases
@@ -883,6 +883,6 @@ Completed immediate tasks:
 
 ## Definition of Success
 
-The Haskell 2010 compiler succeeds when `hegglog compile Main.hs -o main` works
+The Haskell 2010 compiler succeeds when `haskell-compiler compile Main.hs -o main` works
 for the documented Haskell 2010 feature set, producing a native executable
 whose behavior matches the implemented Haskell 2010 semantics.

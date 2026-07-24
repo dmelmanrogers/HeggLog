@@ -4,13 +4,13 @@ listAppend :: [Int]
 listAppend = [1, 2] ++ [] ++ [3, 4]
 
 stringAppend :: String
-stringAppend = "he" ++ "gg" ++ "log"
+stringAppend = "haskell-" ++ "compiler"
 
 leftSection :: String -> String
 leftSection = ("he" ++)
 
 rightSection :: String -> String
-rightSection = (++ "log")
+rightSection = (++ "suffix")
 
 main :: IO ()
 main = do
@@ -19,5 +19,5 @@ main = do
   print ([1] ++ [2] ++ [3])
   print ((++) [True] [False])
   putStrLn (leftSection "y")
-  putStrLn (rightSection "heg")
+  putStrLn (rightSection "pre")
   return ()

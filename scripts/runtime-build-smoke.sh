@@ -4,7 +4,7 @@ set -euo pipefail
 workdir=".context/runtime-build-integration"
 source_file="$workdir/runtime-build-main.hs"
 output_file="$workdir/runtime-build-main"
-intermediate_dir=".context/hegglog/intermediates"
+intermediate_dir=".context/haskell-compiler/intermediates"
 llvm_file="$intermediate_dir/runtime-build-main.ll"
 object_file="$intermediate_dir/runtime-build-main.o"
 
@@ -21,7 +21,7 @@ printf '== runtime build toolchain ==\n'
 scripts/check-native-toolchain.sh
 
 printf '== compile with kept runtime intermediates ==\n'
-cabal run -v0 hegglog -- compile "$source_file" --keep-intermediates -o "$output_file"
+cabal run -v0 haskell-compiler -- compile "$source_file" --keep-intermediates -o "$output_file"
 
 if [[ ! -x "$output_file" ]]; then
   printf 'native executable was not created at %s\n' "$output_file" >&2
@@ -39,7 +39,7 @@ if ! grep -q "lazy enter/apply runtime" "$llvm_file"; then
   printf 'LLVM intermediate does not include the lazy runtime marker\n' >&2
   exit 1
 fi
-if ! grep -q "@hegglog_hs_argc" "$llvm_file"; then
+if ! grep -q "@haskell_compiler_hs_argc" "$llvm_file"; then
   printf 'LLVM intermediate does not include process/runtime globals\n' >&2
   exit 1
 fi

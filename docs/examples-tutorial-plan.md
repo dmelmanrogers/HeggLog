@@ -2,7 +2,7 @@
 
 Status: complete for `DOC-004`.
 
-This plan defines how HeggLog examples and tutorials are organized for the
+This plan defines how Haskell Compiler examples and tutorials are organized for the
 Haskell 2010 native compiler target. It deliberately separates the plan from
 the gallery implementation owned by `REL-006`.
 
@@ -31,11 +31,11 @@ the gallery implementation owned by `REL-006`.
 The tutorial path should introduce capabilities in this order:
 
 1. Build the compiler with `cabal build all`.
-2. Check a Haskell 2010 source file with `hegglog check`.
-3. Emit Core with `hegglog emit-core --both`.
-4. Emit STG with `hegglog emit-stg`.
-5. Run a source file directly with `hegglog run`.
-6. Compile a native executable with `hegglog compile`.
+2. Check a Haskell 2010 source file with `haskell-compiler check`.
+3. Emit Core with `haskell-compiler emit-core --both`.
+4. Emit STG with `haskell-compiler emit-stg`.
+5. Run a source file directly with `haskell-compiler run`.
+6. Compile a native executable with `haskell-compiler compile`.
 7. Use `--no-egglog` and `--strict-egglog` to inspect optimizer behavior.
 8. Preserve generated files with `--keep-intermediates`.
 9. Compile a multi-module program through `--import-path`.

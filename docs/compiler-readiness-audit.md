@@ -22,7 +22,7 @@ Haskell 2010 native compiler, tracked in
 [`haskell2010-roadmap.md`](haskell2010-roadmap.md) and
 [`haskell2010-conformance-matrix.md`](haskell2010-conformance-matrix.md).
 
-This audit evaluates the current HeggLog codebase as a compiler implementation, with emphasis on end-to-end readiness, semantic correctness, optimizer safety, LLVM backend completeness, diagnostics, tests, documentation, and remaining work required for a practical v1 compiler.
+This audit evaluates the current Haskell Compiler codebase as a compiler implementation, with emphasis on end-to-end readiness, semantic correctness, optimizer safety, LLVM backend completeness, diagnostics, tests, documentation, and remaining work required for a practical v1 compiler.
 
 This version of the audit is synchronized with the compiler baseline that
 includes checked LLVM division, strictness-preserving Egglog rules, native
@@ -30,7 +30,7 @@ executable output through `clang`, and mandatory end-to-end wet testing.
 
 ## 1. Executive Summary
 
-HeggLog is a credible native compiler baseline for a well-defined, typed
+Haskell Compiler is a credible native compiler baseline for a well-defined, typed
 strict `.hg` expression-language subset. It currently has the major pieces
 expected of a small compiler:
 
@@ -46,13 +46,13 @@ expected of a small compiler:
 - Mandatory wet tests for native executable artifacts.
 - A meaningful test suite across parser, typechecker, interpreter, optimizer, backend, goldens, and properties.
 
-For the current supported runtime fragment, HeggLog is a working compiler:
+For the current supported runtime fragment, Haskell Compiler is a working compiler:
 successful supported programs can be compiled to native executables, and
 unsupported compile targets fail structurally rather than silently producing
 bad artifacts.
 
 The project now has the core artifact behavior expected of a small compiler for
-its supported subset: `hegglog compile file.hg -o program` generates LLVM IR
+its supported subset: `haskell-compiler compile file.hg -o program` generates LLVM IR
 and invokes `clang` to produce a native executable, while `--emit-llvm` preserves
 textual LLVM output. `--run-llvm` remains available for LLVM-tool execution, and
 `--run` builds and runs the requested native executable.
@@ -122,8 +122,8 @@ Representative CLI checks:
 | LLVM run | `examples/higher-order.hg` | Passed; closure output `42`. |
 | LLVM emit | `examples/llvm/arithmetic.hg --emit-llvm -o .context/audit-cli/arithmetic.ll` | Passed; wrote LLVM IR text. |
 | Native output path | `examples/llvm/arithmetic.hg -o .context/audit-cli/program` | Passed when `clang` was available; produced a native executable. |
-| Native output path | `examples/llvm/division.hg -o /tmp/hegglog-division-no-egglog --no-egglog` | Passed; output `5`. |
-| Native Bool root | `examples/llvm/bool-root.hg -o /tmp/hegglog-bool` | Passed; output `1`. |
+| Native output path | `examples/llvm/division.hg -o /tmp/haskell-compiler-division-no-egglog --no-egglog` | Passed; output `5`. |
+| Native Bool root | `examples/llvm/bool-root.hg -o /tmp/haskell-compiler-bool` | Passed; output `1`. |
 
 ## 3. Current End-to-End Compiler Capability
 
@@ -403,15 +403,15 @@ Current weaknesses:
   - `--run-llvm` runs generated code.
   - `--run-llvm` prints program output to stderr so stdout can remain usable for LLVM text.
   - `--run` builds and runs a requested native executable.
-- There is no clean `hegglog run file.hg` command for ordinary users.
+- There is no clean `haskell-compiler run file.hg` command for ordinary users.
 
 For compiler readiness, the CLI should eventually separate:
 
-- `hegglog check file.hg`
-- `hegglog run file.hg`
-- `hegglog compile file.hg -o program`
-- `hegglog compile file.hg --emit-llvm -o program.ll`
-- `hegglog report file.hg`
+- `haskell-compiler check file.hg`
+- `haskell-compiler run file.hg`
+- `haskell-compiler compile file.hg -o program`
+- `haskell-compiler compile file.hg --emit-llvm -o program.ll`
+- `haskell-compiler report file.hg`
 
 This is not required for internal correctness, but it is important for a polished compiler.
 
@@ -494,7 +494,7 @@ diagnostics.
 
 ## 15. Fully Working Compiler Gap List
 
-To claim HeggLog is a fully working compiler for its current source language, the project still needs:
+To claim Haskell Compiler is a fully working compiler for its current source language, the project still needs:
 
 1. A clean CLI contract for checking, running, compiling, reporting, and emitting LLVM.
 2. Process-level CLI tests that verify native artifacts run outside the compiler process.
@@ -519,7 +519,7 @@ Items not required for a v1 of the current language, but required for a larger g
 
 ### Phase A: Artifact Correctness
 
-Goal: make `hegglog compile` behave like a real compiler command.
+Goal: make `haskell-compiler compile` behave like a real compiler command.
 
 Tasks:
 
@@ -531,9 +531,9 @@ Tasks:
 
 Exit criteria:
 
-- `hegglog compile examples/llvm/arithmetic.hg -o /tmp/arithmetic` creates an executable.
+- `haskell-compiler compile examples/llvm/arithmetic.hg -o /tmp/arithmetic` creates an executable.
 - Running the executable prints `14`.
-- `hegglog compile examples/llvm/arithmetic.hg --emit-llvm -o /tmp/arithmetic.ll` writes LLVM text.
+- `haskell-compiler compile examples/llvm/arithmetic.hg --emit-llvm -o /tmp/arithmetic.ll` writes LLVM text.
 
 ### Phase B: Full Current-Source Arithmetic
 
@@ -643,7 +643,7 @@ Exit criteria:
 
 ## 18. Historical Readiness Verdict
 
-HeggLog is ready to be described as an actively working native compiler
+Haskell Compiler is ready to be described as an actively working native compiler
 baseline for the documented strict `.hg` subset, with a real typed frontend,
 optimizer stack, closure-aware backend path, LLVM execution path, native
 executable output, and mandatory wet tests.

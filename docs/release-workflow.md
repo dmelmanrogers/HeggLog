@@ -3,7 +3,7 @@
 Status: complete for `REL-003`.
 
 The release workflow is the ordered process for turning a verified commit on
-`main` into a tagged HeggLog release. It is intentionally conservative: release
+`main` into a tagged Haskell Compiler release. It is intentionally conservative: release
 automation must never claim broader compiler support than the tracker,
 conformance matrix, and wet tests validate.
 

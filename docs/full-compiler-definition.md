@@ -58,6 +58,6 @@ them to stderr. This is not yet a report-complete Haskell 2010 coverage checker
 or runtime source-attribution system.
 
 The success criterion is documented in
-[`haskell2010-roadmap.md`](haskell2010-roadmap.md): `hegglog compile Main.hs -o
+[`haskell2010-roadmap.md`](haskell2010-roadmap.md): `haskell-compiler compile Main.hs -o
 main` must produce a native executable whose behavior matches the implemented
 Haskell 2010 semantics.

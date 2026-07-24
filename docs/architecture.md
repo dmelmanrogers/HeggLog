@@ -1,6 +1,6 @@
-# HeggLog Architecture
+# Haskell Compiler Architecture
 
-This document records the intended architecture for HeggLog as it grows from a
+This document records the intended architecture for Haskell Compiler as it grows from a
 validated executable Haskell 2010 subset compiler into a fuller Haskell 2010
 compiler. It also records the May 2026 architecture/code audit baseline.
 
@@ -358,7 +358,7 @@ then the full smoke gate before merge:
 
 ```bash
 cabal build all
-cabal test hegglog-test --test-options='--hide-successes'
+cabal test haskell-compiler-test --test-options='--hide-successes'
 cabal test haskell2010-conformance-test --test-options='--hide-successes'
 python3 scripts/validate-haskell2010-todo.py
 git diff --check
@@ -444,7 +444,7 @@ Validation at this baseline passed through `./scripts/smoke-test.sh`.
 | `LICENSE` | MIT license metadata. |
 | `README.md` | Project-facing overview. Should continue to avoid claiming full Haskell 2010 conformance until conformance corpus is much deeper. |
 | `cabal.project` | Minimal Cabal project file. |
-| `hegglog.cabal` | Good explicit module list and warnings. Audit removed stale `Optimize.Placeholder` entries. |
+| `haskell-compiler.cabal` | Good explicit module list and warnings. Audit removed stale `Optimize.Placeholder` entries. |
 
 ### Scripts
 

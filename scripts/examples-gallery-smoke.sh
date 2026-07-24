@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/hegglog-gallery.XXXXXX")"
+tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/haskell-compiler-gallery.XXXXXX")"
 cleanup() {
   rm -rf "$tmpdir"
 }
@@ -20,28 +20,28 @@ run_and_expect() {
   fi
 }
 
-cabal build exe:hegglog
+cabal build exe:haskell-compiler
 
 run_and_expect \
   "lazy argument run" \
   "1" \
-  cabal run -v0 hegglog -- run examples/haskell2010/lazy-argument.hs
+  cabal run -v0 haskell-compiler -- run examples/haskell2010/lazy-argument.hs
 
 run_and_expect \
   "fibonacci run" \
   "21" \
-  cabal run -v0 hegglog -- run examples/haskell2010/fibonacci.hs
+  cabal run -v0 haskell-compiler -- run examples/haskell2010/fibonacci.hs
 
 run_and_expect \
   "typeclass dictionary run" \
   "1" \
-  cabal run -v0 hegglog -- run examples/haskell2010/typeclass-dictionary.hs
+  cabal run -v0 haskell-compiler -- run examples/haskell2010/typeclass-dictionary.hs
 
-cabal run -v0 hegglog -- check examples/haskell2010/standard-library.hs
-cabal run -v0 hegglog -- check examples/haskell2010/io-and-show.hs
+cabal run -v0 haskell-compiler -- check examples/haskell2010/standard-library.hs
+cabal run -v0 haskell-compiler -- check examples/haskell2010/io-and-show.hs
 
 module_out="$tmpdir/modules-main"
-cabal run -v0 hegglog -- compile \
+cabal run -v0 haskell-compiler -- compile \
   examples/haskell2010/modules/Main.hs \
   --import-path examples/haskell2010/modules \
   -o "$module_out" >/dev/null

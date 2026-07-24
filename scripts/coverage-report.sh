@@ -8,15 +8,15 @@ output_dir="${1:-.context/coverage}"
 rm -rf "$output_dir"
 mkdir -p "$output_dir/html"
 
-cabal test hegglog-test --enable-coverage --test-options='--hide-successes'
+cabal test haskell-compiler-test --enable-coverage --test-options='--hide-successes'
 
 html_index="$(
-  find dist-newstyle -path '*hegglog-test/hpc/vanilla/html/hpc_index.html' -print \
+  find dist-newstyle -path '*haskell-compiler-test/hpc/vanilla/html/hpc_index.html' -print \
     | sort \
     | tail -n 1
 )"
 tix_file="$(
-  find dist-newstyle -path '*hegglog-test/hpc/vanilla/tix/hegglog-test.tix' -print \
+  find dist-newstyle -path '*haskell-compiler-test/hpc/vanilla/tix/haskell-compiler-test.tix' -print \
     | sort \
     | tail -n 1
 )"
@@ -32,7 +32,7 @@ if [[ -z "$tix_file" || ! -f "$tix_file" ]]; then
 fi
 
 cp -R "$(dirname "$html_index")"/. "$output_dir/html/"
-cp "$tix_file" "$output_dir/hegglog-test.tix"
+cp "$tix_file" "$output_dir/haskell-compiler-test.tix"
 
 python3 - "$output_dir/html/hpc_index.html" "$output_dir/summary.txt" <<'PY'
 from __future__ import annotations
@@ -69,14 +69,14 @@ if len(values) != 6:
     raise SystemExit(1)
 
 labels = ["Top-level definitions", "Alternatives", "Expressions"]
-lines = ["# HeggLog Coverage Summary", ""]
+lines = ["# Haskell Compiler Coverage Summary", ""]
 for label, percent, count in zip(labels, values[0::2], values[1::2]):
     lines.append(f"- {label}: {percent} ({count})")
 lines.extend(
     [
         "",
         f"- HTML index: {html_path}",
-        f"- TIX file: {summary_path.parent / 'hegglog-test.tix'}",
+        f"- TIX file: {summary_path.parent / 'haskell-compiler-test.tix'}",
         "",
     ]
 )

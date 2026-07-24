@@ -2,7 +2,7 @@
 
 Status: complete for `REL-007`.
 
-HeggLog packages the implemented Haskell 2010 standard library as an internal
+Haskell Compiler packages the implemented Haskell 2010 standard library as an internal
 virtual library owned by `Haskell2010.StandardLibrary`. That module is the
 single release boundary for generated interfaces and source-backed virtual
 modules.
@@ -67,7 +67,7 @@ scripts/validate-standard-library-packaging.sh
 ```
 
 The validator builds a temporary module that imports every advertised standard
-library module through the public `hegglog check` command. It fails if a module
+library module through the public `haskell-compiler check` command. It fails if a module
 is missing from the virtual package boundary or cannot be loaded by the module
 graph.
 

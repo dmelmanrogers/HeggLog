@@ -73,8 +73,8 @@ Proposed runtime files:
 
 ```text
 src/Runtime/ or runtime/
-  hegglog_rts.c
-  hegglog_rts.h
+  haskell_compiler_rts.c
+  haskell_compiler_rts.h
 ```
 
 Implemented Core Egglog adapter:
@@ -249,7 +249,7 @@ is built alongside them.
 - Negative tests: missing runtime link, invalid STG, invalid LLVM.
 - Golden tests: selected LLVM IR.
 - Property tests: generated small STG fragments validate after lowering.
-- Wet tests: `hegglog compile Main.hs -o main` plus direct executable runs.
+- Wet tests: `haskell-compiler compile Main.hs -o main` plus direct executable runs.
 - Conformance matrix: update LLVM/native columns only after native tests pass.
 
 ### ADTs, Recursion, Prelude, Type Classes, IO, Modules

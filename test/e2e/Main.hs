@@ -53,15 +53,15 @@ data CommandResult = CommandResult
 
 main :: IO ()
 main = do
-  hegglog <- requireExecutable "HEGGLOG_EXE" "hegglog"
-  clang <- requireExecutable "CLANG" "clang"
-  putStrLn ("hegglog: " <> hegglog)
+  compilerExe <- requireExecutable ["HASKELL_COMPILER_EXE"] "haskell-compiler"
+  clang <- requireExecutable ["CLANG"] "clang"
+  putStrLn ("haskell-compiler: " <> compilerExe)
   putStrLn ("clang: " <> clang)
   counts <- pure manifestCounts
   putStrLn ("native runs: " <> show (nativeRunCount counts))
   putStrLn ("--no-egglog runs: " <> show (noEgglogRunCount counts))
   putStrLn ("emit-LLVM runs: " <> show (emitLLVMRunCount counts))
-  testResult <- runTestTT (TestList (tests hegglog clang))
+  testResult <- runTestTT (TestList (tests compilerExe clang))
   unless (errors testResult == 0 && failures testResult == 0) exitFailure
 
 data ManifestCounts = ManifestCounts
@@ -80,35 +80,35 @@ manifestCounts =
     }
 
 tests :: FilePath -> FilePath -> [Test]
-tests hegglog clang =
-  commandModelTests hegglog <> concatMap (caseTests hegglog clang) e2eCases
+tests compilerExe clang =
+  commandModelTests compilerExe <> concatMap (caseTests compilerExe clang) e2eCases
 
 commandModelTests :: FilePath -> [Test]
-commandModelTests hegglog =
-  cliHelpTests hegglog <>
+commandModelTests compilerExe =
+  cliHelpTests compilerExe <>
   [ TestLabel "CLI help uses stdout" $
       TestCase $ do
-        result <- runCommand hegglog ["--help"]
-        assertExitSuccess ("help " <> showCommand hegglog ["--help"]) result
-        assertBool "help stdout names compiler" ("HeggLog compiler" `isInfixOf` resultStdout result)
-        assertBool "help stdout documents check command" ("hegglog check FILE" `isInfixOf` resultStdout result)
-        assertBool "help stdout documents run command" ("hegglog run FILE" `isInfixOf` resultStdout result)
-        assertBool "help stdout documents compile command" ("hegglog compile FILE" `isInfixOf` resultStdout result)
+        result <- runCommand compilerExe ["--help"]
+        assertExitSuccess ("help " <> showCommand compilerExe ["--help"]) result
+        assertBool "help stdout names compiler" ("Haskell Compiler" `isInfixOf` resultStdout result)
+        assertBool "help stdout documents check command" ("haskell-compiler check FILE" `isInfixOf` resultStdout result)
+        assertBool "help stdout documents run command" ("haskell-compiler run FILE" `isInfixOf` resultStdout result)
+        assertBool "help stdout documents compile command" ("haskell-compiler compile FILE" `isInfixOf` resultStdout result)
         assertEqual "help stderr" "" (resultStderr result)
   , TestLabel "CLI check help uses stdout" $
       TestCase $ do
-        result <- runCommand hegglog ["check", "--help"]
-        assertExitSuccess ("check help " <> showCommand hegglog ["check", "--help"]) result
-        assertBool "check help stdout names mode" ("HeggLog check mode" `isInfixOf` resultStdout result)
+        result <- runCommand compilerExe ["check", "--help"]
+        assertExitSuccess ("check help " <> showCommand compilerExe ["check", "--help"]) result
+        assertBool "check help stdout names mode" ("Haskell Compiler check mode" `isInfixOf` resultStdout result)
         assertBool "check help stdout documents no codegen" ("without emitting LLVM IR" `isInfixOf` resultStdout result)
         assertBool "check help stdout documents dump flags" ("--dump-core" `isInfixOf` resultStdout result)
         assertBool "check help stdout documents strict egglog" ("--strict-egglog" `isInfixOf` resultStdout result)
         assertEqual "check help stderr" "" (resultStderr result)
   , TestLabel "CLI compile help uses stdout" $
       TestCase $ do
-        result <- runCommand hegglog ["compile", "--help"]
-        assertExitSuccess ("compile help " <> showCommand hegglog ["compile", "--help"]) result
-        assertBool "compile help stdout names mode" ("HeggLog compile mode" `isInfixOf` resultStdout result)
+        result <- runCommand compilerExe ["compile", "--help"]
+        assertExitSuccess ("compile help " <> showCommand compilerExe ["compile", "--help"]) result
+        assertBool "compile help stdout names mode" ("Haskell Compiler compile mode" `isInfixOf` resultStdout result)
         assertBool "compile help stdout documents link objects" ("--link-object PATH" `isInfixOf` resultStdout result)
         assertBool "compile help stdout documents dump flags" ("--dump-optimized-core" `isInfixOf` resultStdout result)
         assertBool "compile help stdout documents keep intermediates" ("--keep-intermediates" `isInfixOf` resultStdout result)
@@ -116,23 +116,23 @@ commandModelTests hegglog =
         assertEqual "compile help stderr" "" (resultStderr result)
   , TestLabel "CLI emit-core help uses stdout" $
       TestCase $ do
-        result <- runCommand hegglog ["emit-core", "--help"]
-        assertExitSuccess ("emit-core help " <> showCommand hegglog ["emit-core", "--help"]) result
-        assertBool "emit-core help stdout names mode" ("HeggLog emit-core mode" `isInfixOf` resultStdout result)
+        result <- runCommand compilerExe ["emit-core", "--help"]
+        assertExitSuccess ("emit-core help " <> showCommand compilerExe ["emit-core", "--help"]) result
+        assertBool "emit-core help stdout names mode" ("Haskell Compiler emit-core mode" `isInfixOf` resultStdout result)
         assertBool "emit-core help stdout documents typed Core" ("typed Haskell 2010 Core" `isInfixOf` resultStdout result)
         assertEqual "emit-core help stderr" "" (resultStderr result)
   , TestLabel "CLI emit-stg help uses stdout" $
       TestCase $ do
-        result <- runCommand hegglog ["emit-stg", "--help"]
-        assertExitSuccess ("emit-stg help " <> showCommand hegglog ["emit-stg", "--help"]) result
-        assertBool "emit-stg help stdout names mode" ("HeggLog emit-stg mode" `isInfixOf` resultStdout result)
+        result <- runCommand compilerExe ["emit-stg", "--help"]
+        assertExitSuccess ("emit-stg help " <> showCommand compilerExe ["emit-stg", "--help"]) result
+        assertBool "emit-stg help stdout names mode" ("Haskell Compiler emit-stg mode" `isInfixOf` resultStdout result)
         assertBool "emit-stg help stdout documents STG" ("emit Haskell 2010 STG" `isInfixOf` resultStdout result)
         assertEqual "emit-stg help stderr" "" (resultStderr result)
   , TestLabel "CLI run help uses stdout" $
       TestCase $ do
-        result <- runCommand hegglog ["run", "--help"]
-        assertExitSuccess ("run help " <> showCommand hegglog ["run", "--help"]) result
-        assertBool "run help stdout names mode" ("HeggLog run mode" `isInfixOf` resultStdout result)
+        result <- runCommand compilerExe ["run", "--help"]
+        assertExitSuccess ("run help " <> showCommand compilerExe ["run", "--help"]) result
+        assertBool "run help stdout names mode" ("Haskell Compiler run mode" `isInfixOf` resultStdout result)
         assertBool "run help stdout documents output forwarding" ("forward program stdout/stderr" `isInfixOf` resultStdout result)
         assertBool "run help stdout documents dump flags" ("--dump-stg" `isInfixOf` resultStdout result)
         assertBool "run help stdout documents keep intermediates" ("--keep-intermediates" `isInfixOf` resultStdout result)
@@ -140,32 +140,32 @@ commandModelTests hegglog =
         assertEqual "run help stderr" "" (resultStderr result)
   , TestLabel "CLI report help uses stdout" $
       TestCase $ do
-        result <- runCommand hegglog ["report", "--help"]
-        assertExitSuccess ("report help " <> showCommand hegglog ["report", "--help"]) result
-        assertBool "report help stdout names mode" ("HeggLog report mode" `isInfixOf` resultStdout result)
+        result <- runCommand compilerExe ["report", "--help"]
+        assertExitSuccess ("report help " <> showCommand compilerExe ["report", "--help"]) result
+        assertBool "report help stdout names mode" ("Haskell Compiler report mode" `isInfixOf` resultStdout result)
         assertBool "report help stdout documents legacy mode" ("legacy .hg" `isInfixOf` resultStdout result)
         assertBool "report help stdout documents Haskell mode" ("Haskell 2010 .hs reports" `isInfixOf` resultStdout result)
         assertBool "report help stdout documents strict egglog" ("--strict-egglog" `isInfixOf` resultStdout result)
         assertEqual "report help stderr" "" (resultStderr result)
   , TestLabel "CLI command errors use stderr" $
       TestCase $ do
-        result <- runCommand hegglog []
-        assertNonZeroExit ("missing command " <> hegglog) result
+        result <- runCommand compilerExe []
+        assertNonZeroExit ("missing command " <> compilerExe) result
         assertEqual "missing command stdout" "" (resultStdout result)
         assertBool "missing command stderr has diagnostic" ("missing command or source file" `isInfixOf` resultStderr result)
         assertBool "missing command stderr has usage" ("usage:" `isInfixOf` resultStderr result)
   , TestLabel "CLI check validates Haskell module without main" $
       TestCase $ do
         let args = ["check", "test/e2e/programs/haskell2010/check-library/Library.hs"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("check library " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("check library " <> showCommand compilerExe args) result
         assertEqual "check library stdout" "" (resultStdout result)
         assertEqual "check library stderr" "" (resultStderr result)
   , TestLabel "CLI report emits Haskell 2010 diagnostic sections" $
       TestCase $ do
         let args = ["report", "test/e2e/programs/haskell2010/check-library/Library.hs"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("report library " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("report library " <> showCommand compilerExe args) result
         assertEqual "report library stderr" "" (resultStderr result)
         assertBool "report stdout status" ("Status: ok" `isInfixOf` resultStdout result)
         assertBool "report stdout mode" ("mode: Haskell 2010" `isInfixOf` resultStdout result)
@@ -175,22 +175,22 @@ commandModelTests hegglog =
   , TestLabel "CLI report honors Haskell 2010 no-egglog mode" $
       TestCase $ do
         let args = ["report", "test/e2e/programs/haskell2010/check-library/Library.hs", "--no-egglog"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("report library no-egglog " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("report library no-egglog " <> showCommand compilerExe args) result
         assertEqual "report no-egglog stderr" "" (resultStderr result)
         assertBool "report no-egglog status" ("egglog-core: disabled" `isInfixOf` resultStdout result)
   , TestLabel "CLI report strict egglog rejects legacy optimizer fallback" $
       TestCase $ do
         let args = ["report", "test/e2e/programs/top-level-function.hg", "--strict-egglog"]
-        result <- runCommand hegglog args
-        assertNonZeroExit ("report strict egglog " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertNonZeroExit ("report strict egglog " <> showCommand compilerExe args) result
         assertEqual "report strict stdout" "" (resultStdout result)
         assertBool "report strict stderr" ("--strict-egglog" `isInfixOf` resultStderr result)
   , TestLabel "CLI check dumps selected Haskell 2010 artifacts to stderr" $
       TestCase $ do
         let args = ["check", "test/e2e/programs/haskell2010/check-library/Library.hs", "--dump-core", "--dump-stg"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("check dump " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("check dump " <> showCommand compilerExe args) result
         assertEqual "check dump stdout" "" (resultStdout result)
         assertBool "check dump stderr contains Core section" ("== Core ==" `isInfixOf` resultStderr result)
         assertBool "check dump stderr contains module Core" ("module Library" `isInfixOf` resultStderr result)
@@ -199,32 +199,32 @@ commandModelTests hegglog =
   , TestLabel "CLI check validates legacy hg without codegen output" $
       TestCase $ do
         let args = ["check", "test/e2e/programs/arithmetic.hg"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("check hg " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("check hg " <> showCommand compilerExe args) result
         assertEqual "check hg stdout" "" (resultStdout result)
         assertEqual "check hg stderr" "" (resultStderr result)
   , TestLabel "CLI dump flags reject legacy hg sources" $
       TestCase $ do
         let args = ["check", "test/e2e/programs/arithmetic.hg", "--dump-core"]
-        result <- runCommand hegglog args
-        assertNonZeroExit ("check hg dump rejection " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertNonZeroExit ("check hg dump rejection " <> showCommand compilerExe args) result
         assertEqual "check hg dump stdout" "" (resultStdout result)
         assertBool "check hg dump stderr explains unsupported source" ("legacy .hg sources have no typed Core/STG" `isInfixOf` resultStderr result)
   , TestLabel "CLI emit-core writes typed Haskell Core to stdout" $
       TestCase $ do
         let args = ["emit-core", "test/e2e/programs/haskell2010/check-library/Library.hs", "--original", "--no-egglog"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("emit-core stdout " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("emit-core stdout " <> showCommand compilerExe args) result
         assertBool "emit-core stdout contains module header" ("module Library" `isInfixOf` resultStdout result)
         assertBool "emit-core stdout contains typed binding" ("answer" `isInfixOf` resultStdout result && " : Int" `isInfixOf` resultStdout result)
         assertEqual "emit-core stderr" "" (resultStderr result)
   , TestLabel "CLI emit-core writes selected Core sections to output file" $
       TestCase $
-        withSystemTempDirectory "hegglog-e2e-core" $ \tmpDir -> do
+        withSystemTempDirectory "haskell-compiler-e2e-core" $ \tmpDir -> do
           let corePath = tmpDir </> "core.txt"
               args = ["emit-core", "test/e2e/programs/haskell2010/lazy-argument.hs", "--both", "-o", corePath]
-          result <- runCommand hegglog args
-          assertExitSuccess ("emit-core output " <> showCommand hegglog args) result
+          result <- runCommand compilerExe args
+          assertExitSuccess ("emit-core output " <> showCommand compilerExe args) result
           assertEqual "emit-core output stdout" "" (resultStdout result)
           assertEqual "emit-core output stderr" "" (resultStderr result)
           coreText <- Text.IO.readFile corePath
@@ -233,18 +233,18 @@ commandModelTests hegglog =
   , TestLabel "CLI emit-stg writes validated STG to stdout" $
       TestCase $ do
         let args = ["emit-stg", "test/e2e/programs/haskell2010/check-library/Library.hs", "--no-egglog"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("emit-stg stdout " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("emit-stg stdout " <> showCommand compilerExe args) result
         assertBool "emit-stg stdout contains STG program wrapper" ("stg {" `isInfixOf` resultStdout result)
         assertBool "emit-stg stdout contains typed binding" ("answer" `isInfixOf` resultStdout result && " : Int" `isInfixOf` resultStdout result)
         assertEqual "emit-stg stderr" "" (resultStderr result)
   , TestLabel "CLI emit-stg writes STG to output file" $
       TestCase $
-        withSystemTempDirectory "hegglog-e2e-stg" $ \tmpDir -> do
+        withSystemTempDirectory "haskell-compiler-e2e-stg" $ \tmpDir -> do
           let stgPath = tmpDir </> "program.stg"
               args = ["emit-stg", "test/e2e/programs/haskell2010/check-library/Library.hs", "-o", stgPath]
-          result <- runCommand hegglog args
-          assertExitSuccess ("emit-stg output " <> showCommand hegglog args) result
+          result <- runCommand compilerExe args
+          assertExitSuccess ("emit-stg output " <> showCommand compilerExe args) result
           assertEqual "emit-stg output stdout" "" (resultStdout result)
           assertEqual "emit-stg output stderr" "" (resultStderr result)
           stgText <- Text.IO.readFile stgPath
@@ -253,61 +253,61 @@ commandModelTests hegglog =
   , TestLabel "CLI emit-stg rejects legacy hg sources" $
       TestCase $ do
         let args = ["emit-stg", "test/e2e/programs/arithmetic.hg"]
-        result <- runCommand hegglog args
-        assertNonZeroExit ("emit-stg legacy rejection " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertNonZeroExit ("emit-stg legacy rejection " <> showCommand compilerExe args) result
         assertEqual "emit-stg legacy stdout" "" (resultStdout result)
         assertBool "emit-stg legacy stderr explains unsupported source" ("legacy .hg has no STG IR" `isInfixOf` resultStderr result)
   , TestLabel "CLI compile dump flags preserve LLVM stdout" $
       TestCase $ do
         let args = ["compile", "test/e2e/programs/haskell2010/lazy-argument.hs", "--emit-llvm", "--dump-optimized-core"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("compile dump " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("compile dump " <> showCommand compilerExe args) result
         assertBool "compile dump stdout contains LLVM" ("define" `isInfixOf` resultStdout result)
         assertBool "compile dump stderr contains optimized Core section" ("== Optimized Core ==" `isInfixOf` resultStderr result)
         assertBool "compile dump stderr contains main binding" ("main" `isInfixOf` resultStderr result)
   , TestLabel "CLI compile strict Egglog succeeds on supported legacy ANF" $
       TestCase $ do
         let args = ["compile", "test/e2e/programs/arithmetic.hg", "--emit-llvm", "--strict-egglog"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("compile strict egglog " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("compile strict egglog " <> showCommand compilerExe args) result
         assertBool "compile strict stdout contains LLVM" ("define" `isInfixOf` resultStdout result)
         assertBool "compile strict stdout records optimizer" ("egglog: optimized" `isInfixOf` resultStdout result)
         assertEqual "compile strict stderr" "" (resultStderr result)
   , TestLabel "CLI compile strict Egglog rejects legacy fallback" $
       TestCase $ do
         let args = ["compile", "test/e2e/programs/top-level-function.hg", "--emit-llvm", "--strict-egglog"]
-        result <- runCommand hegglog args
-        assertNonZeroExit ("compile strict egglog fallback " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertNonZeroExit ("compile strict egglog fallback " <> showCommand compilerExe args) result
         assertEqual "compile strict fallback stdout" "" (resultStdout result)
         assertBool "compile strict fallback stderr names strict flag" ("--strict-egglog" `isInfixOf` resultStderr result)
   , TestLabel "CLI check strict Egglog rejects Haskell Core fallback" $
       TestCase $ do
         let args = ["check", "test/e2e/programs/haskell2010/lazy-argument.hs", "--strict-egglog"]
-        result <- runCommand hegglog args
-        assertNonZeroExit ("check strict egglog Haskell fallback " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertNonZeroExit ("check strict egglog Haskell fallback " <> showCommand compilerExe args) result
         assertEqual "check strict fallback stdout" "" (resultStdout result)
         assertBool "check strict fallback stderr names strict flag" ("--strict-egglog" `isInfixOf` resultStderr result)
   , TestLabel "CLI compile keep-intermediates preserves emitted LLVM copy" $
       TestCase $ do
         cleanupKeptIntermediates "lazy-argument"
         let args = ["compile", "test/e2e/programs/haskell2010/lazy-argument.hs", "--emit-llvm", "--keep-intermediates"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("compile keep intermediates " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("compile keep intermediates " <> showCommand compilerExe args) result
         assertBool "compile keep stdout contains LLVM" ("define" `isInfixOf` resultStdout result)
-        assertBool "compile keep stderr reports LLVM path" ("kept LLVM intermediate at .context/hegglog/intermediates/lazy-argument.ll" `isInfixOf` resultStderr result)
+        assertBool "compile keep stderr reports LLVM path" ("kept LLVM intermediate at .context/haskell-compiler/intermediates/lazy-argument.ll" `isInfixOf` resultStderr result)
         assertFileExists "compile keep LLVM file" (keptLLVMPath "lazy-argument")
   , TestLabel "CLI run forwards program output without build chatter" $
       TestCase $ do
         let args = ["run", "test/e2e/programs/haskell2010/lazy-argument.hs"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("run source " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("run source " <> showCommand compilerExe args) result
         assertEqual "run stdout" "1\n" (resultStdout result)
         assertEqual "run stderr" "" (resultStderr result)
   , TestLabel "CLI run dump flags preserve program stdout" $
       TestCase $ do
         let args = ["run", "test/e2e/programs/haskell2010/lazy-argument.hs", "--dump-stg"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("run dump " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("run dump " <> showCommand compilerExe args) result
         assertEqual "run dump stdout" "1\n" (resultStdout result)
         assertBool "run dump stderr contains STG section" ("== STG ==" `isInfixOf` resultStderr result)
         assertBool "run dump stderr contains STG wrapper" ("stg {" `isInfixOf` resultStderr result)
@@ -315,31 +315,31 @@ commandModelTests hegglog =
       TestCase $ do
         cleanupKeptIntermediates "lazy-argument"
         let args = ["run", "test/e2e/programs/haskell2010/lazy-argument.hs", "--keep-intermediates"]
-        result <- runCommand hegglog args
-        assertExitSuccess ("run keep intermediates " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess ("run keep intermediates " <> showCommand compilerExe args) result
         assertEqual "run keep stdout" "1\n" (resultStdout result)
-        assertBool "run keep stderr reports LLVM path" ("kept LLVM intermediate at .context/hegglog/intermediates/lazy-argument.ll" `isInfixOf` resultStderr result)
-        assertBool "run keep stderr reports object path" ("kept object intermediate at .context/hegglog/intermediates/lazy-argument.o" `isInfixOf` resultStderr result)
-        assertBool "run keep stderr reports executable path" ("kept executable intermediate at .context/hegglog/intermediates/lazy-argument" `isInfixOf` resultStderr result)
+        assertBool "run keep stderr reports LLVM path" ("kept LLVM intermediate at .context/haskell-compiler/intermediates/lazy-argument.ll" `isInfixOf` resultStderr result)
+        assertBool "run keep stderr reports object path" ("kept object intermediate at .context/haskell-compiler/intermediates/lazy-argument.o" `isInfixOf` resultStderr result)
+        assertBool "run keep stderr reports executable path" ("kept executable intermediate at .context/haskell-compiler/intermediates/lazy-argument" `isInfixOf` resultStderr result)
         assertFileExists "run keep LLVM file" (keptLLVMPath "lazy-argument")
         assertFileExists "run keep object file" (keptObjectPath "lazy-argument")
         assertExecutableExists (keptExecutablePath "lazy-argument")
   , TestLabel "CLI run preserves nonzero program exit" $
       TestCase $ do
         let args = ["run", "test/e2e/programs/runtime-errors/division-by-zero.hg"]
-        result <- runCommand hegglog args
-        assertNonZeroExit ("run runtime error " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertNonZeroExit ("run runtime error " <> showCommand compilerExe args) result
         assertEqual "run runtime-error stdout" "" (resultStdout result)
         assertBool "run runtime-error stderr reports exit" ("native executable exited with" `isInfixOf` resultStderr result)
   ]
 
 cliHelpTests :: FilePath -> [Test]
-cliHelpTests hegglog =
+cliHelpTests compilerExe =
   [ TestLabel ("CLI " <> label <> " help matches public golden stdout") $
       TestCase $ do
         expected <- Text.IO.readFile goldenPath
-        result <- runCommand hegglog args
-        assertExitSuccess (label <> " help " <> showCommand hegglog args) result
+        result <- runCommand compilerExe args
+        assertExitSuccess (label <> " help " <> showCommand compilerExe args) result
         assertEqual (label <> " help stdout") (Text.unpack expected) (resultStdout result)
         assertEqual (label <> " help stderr") "" (resultStderr result)
   | (label, args, goldenPath) <- cliHelpGoldenCases
@@ -357,38 +357,38 @@ cliHelpGoldenCases =
   ]
 
 caseTests :: FilePath -> FilePath -> E2ECase -> [Test]
-caseTests hegglog clang e2eCase =
+caseTests compilerExe clang e2eCase =
   nativeTests <> emitTests <> reportTests
  where
   nativeTests =
     [ TestLabel (Text.unpack (caseName e2eCase) <> " native " <> modeLabel mode) $
-        TestCase (runNativeCase hegglog e2eCase mode)
+        TestCase (runNativeCase compilerExe e2eCase mode)
     | mode <- egglogModes e2eCase
     ]
   emitTests =
     case expected e2eCase of
       ExpectSuccess {} | alsoEmitLLVM e2eCase ->
         [ TestLabel (Text.unpack (caseName e2eCase) <> " emit-llvm") $
-            TestCase (runEmitLLVMCase hegglog clang e2eCase)
+            TestCase (runEmitLLVMCase compilerExe clang e2eCase)
         ]
       _ -> []
   reportTests =
     case expected e2eCase of
       ExpectSuccess {} | includeReport e2eCase ->
         [ TestLabel (Text.unpack (caseName e2eCase) <> " report") $
-            TestCase (runReportCase hegglog e2eCase)
+            TestCase (runReportCase compilerExe e2eCase)
         ]
       _ -> []
 
 runNativeCase :: FilePath -> E2ECase -> EgglogMode -> Assertion
-runNativeCase hegglog e2eCase mode =
-  withSystemTempDirectory "hegglog-e2e-native" $ \tmpDir -> do
+runNativeCase compilerExe e2eCase mode =
+  withSystemTempDirectory "haskell-compiler-e2e-native" $ \tmpDir -> do
     let outputPath = tmpDir </> executableName e2eCase mode
         args = ["compile", sourcePath e2eCase, "-o", outputPath] <> extraCompileArgs e2eCase <> modeArgs mode
-    compileResult <- runCommand hegglog args
+    compileResult <- runCommand compilerExe args
     case expected e2eCase of
       ExpectSuccess expectedStdout -> do
-        assertExitSuccess ("native compile " <> showCommand hegglog args) compileResult
+        assertExitSuccess ("native compile " <> showCommand compilerExe args) compileResult
         assertCompileWarnings e2eCase compileResult
         assertExecutableExists outputPath
         runResult <- runCommandWithInput outputPath [] (stdinText e2eCase)
@@ -396,14 +396,14 @@ runNativeCase hegglog e2eCase mode =
         assertEqual "native stdout" (Text.unpack expectedStdout <> "\n") (resultStdout runResult)
         assertEqual "native stderr" "" (resultStderr runResult)
       ExpectRuntimeError -> do
-        assertExitSuccess ("runtime-error compile " <> showCommand hegglog args) compileResult
+        assertExitSuccess ("runtime-error compile " <> showCommand compilerExe args) compileResult
         assertExecutableExists outputPath
         runResult <- runCommand outputPath []
         assertNonZeroExit ("runtime-error run " <> outputPath) runResult
         assertEqual "runtime-error stdout" "" (resultStdout runResult)
         assertEqual "runtime-error stderr" "" (resultStderr runResult)
       ExpectCompileError categories -> do
-        assertNonZeroExit ("compile-error compile " <> showCommand hegglog args) compileResult
+        assertNonZeroExit ("compile-error compile " <> showCommand compilerExe args) compileResult
         outputExists <- doesFileExist outputPath
         assertBool ("compile-error should not produce executable " <> outputPath) (not outputExists)
         let combinedOutput = resultStdout compileResult <> resultStderr compileResult
@@ -411,13 +411,13 @@ runNativeCase hegglog e2eCase mode =
         assertAnyCategory categories combinedOutput
 
 runEmitLLVMCase :: FilePath -> FilePath -> E2ECase -> Assertion
-runEmitLLVMCase hegglog clang e2eCase =
-  withSystemTempDirectory "hegglog-e2e-llvm" $ \tmpDir -> do
+runEmitLLVMCase compilerExe clang e2eCase =
+  withSystemTempDirectory "haskell-compiler-e2e-llvm" $ \tmpDir -> do
     let llvmPath = tmpDir </> safeCaseName e2eCase <.> "ll"
         exePath = tmpDir </> safeCaseName e2eCase <> "-from-llvm"
         args = ["compile", sourcePath e2eCase, "--emit-llvm", "-o", llvmPath] <> extraCompileArgs e2eCase
-    emitResult <- runCommand hegglog args
-    assertExitSuccess ("emit LLVM " <> showCommand hegglog args) emitResult
+    emitResult <- runCommand compilerExe args
+    assertExitSuccess ("emit LLVM " <> showCommand compilerExe args) emitResult
     assertCompileWarnings e2eCase emitResult
     llvmExists <- doesFileExist llvmPath
     assertBool ("LLVM output should exist: " <> llvmPath) llvmExists
@@ -438,11 +438,11 @@ runEmitLLVMCase hegglog clang e2eCase =
         assertFailure "emit-LLVM cases should be successful programs"
 
 runReportCase :: FilePath -> E2ECase -> Assertion
-runReportCase hegglog e2eCase =
+runReportCase compilerExe e2eCase =
   case expected e2eCase of
     ExpectSuccess expectedStdout -> do
-      result <- runCommand hegglog [sourcePath e2eCase]
-      assertExitSuccess ("report mode " <> showCommand hegglog [sourcePath e2eCase]) result
+      result <- runCommand compilerExe [sourcePath e2eCase]
+      assertExitSuccess ("report mode " <> showCommand compilerExe [sourcePath e2eCase]) result
       assertEqual "report stderr" "" (resultStderr result)
       actual <- assertReportResult (resultStdout result)
       assertEqual "report Result line" (Text.unpack expectedStdout) actual
@@ -465,7 +465,7 @@ runCommandWithInput command args stdinText' = do
 
 keptIntermediateDirectory :: FilePath
 keptIntermediateDirectory =
-  ".context" </> "hegglog" </> "intermediates"
+  ".context" </> "haskell-compiler" </> "intermediates"
 
 keptLLVMPath :: FilePath -> FilePath
 keptLLVMPath baseName =
@@ -488,9 +488,9 @@ removeFileIfExists path = do
   exists <- doesFileExist path
   when exists (removeFile path)
 
-requireExecutable :: String -> String -> IO FilePath
-requireExecutable envName executableName' = do
-  override <- lookupEnv envName
+requireExecutable :: [String] -> String -> IO FilePath
+requireExecutable envNames executableName' = do
+  override <- firstPresentEnv envNames
   case override of
     Just path -> pure path
     Nothing -> do
@@ -500,6 +500,15 @@ requireExecutable envName executableName' = do
         Nothing -> do
           putStrLn ("required executable unavailable on PATH: " <> executableName')
           exitFailure
+
+firstPresentEnv :: [String] -> IO (Maybe FilePath)
+firstPresentEnv [] =
+  pure Nothing
+firstPresentEnv (envName : rest) = do
+  override <- lookupEnv envName
+  case override of
+    Just path -> pure (Just path)
+    Nothing -> firstPresentEnv rest
 
 assertExitSuccess :: String -> CommandResult -> Assertion
 assertExitSuccess label result =
@@ -853,7 +862,7 @@ e2eCases =
   , nativeOnlySuccessCase "haskell2010-egglog-known-constructor" "test/e2e/programs/haskell2010/egglog-known-constructor.hs" "7" [DefaultEgglog, NoEgglog] True
   , nativeOnlySuccessCase "haskell2010-tuple-case" "test/e2e/programs/haskell2010/tuple-case.hs" "3" [DefaultEgglog, NoEgglog] False
   , nativeOnlySuccessCase "haskell2010-prelude-lists" "test/e2e/programs/haskell2010/prelude-lists.hs" "321" [DefaultEgglog, NoEgglog] True
-  , nativeOnlySuccessCase "haskell2010-prelude-append" "test/e2e/programs/haskell2010/prelude-append.hs" "[1,2,3,4]\nhegglog\n[1,2,3]\n[True,False]\nhey\nheglog" [DefaultEgglog, NoEgglog] True
+  , nativeOnlySuccessCase "haskell2010-prelude-append" "test/e2e/programs/haskell2010/prelude-append.hs" "[1,2,3,4]\nhaskell-compiler\n[1,2,3]\n[True,False]\nhey\npresuffix" [DefaultEgglog, NoEgglog] True
   , nativeOnlySuccessCase "haskell2010-prelude-maybe-ordering" "test/e2e/programs/haskell2010/prelude-maybe-ordering.hs" "5" [DefaultEgglog, NoEgglog] False
   , nativeOnlySuccessCase "haskell2010-short-circuit" "test/e2e/programs/haskell2010/short-circuit.hs" "7" [DefaultEgglog, NoEgglog] False
   , nativeOnlySuccessCase "haskell2010-guarded-self-recursion" "test/e2e/programs/haskell2010/guarded-self-recursion.hs" "1" [DefaultEgglog, NoEgglog] False
@@ -886,7 +895,7 @@ e2eCases =
   , nativeOnlySuccessCaseWithCompileArgs "haskell2010-import-search-path" "test/e2e/programs/haskell2010/search-path/Main.hs" "42" [DefaultEgglog, NoEgglog] True ["-i", "test/e2e/programs/haskell2010/search-path-lib"]
   , nativeOnlySuccessCase "haskell2010-io-printing" "test/e2e/programs/haskell2010/io-printing.hs" "ok\nanswer\n42\nTrue" [DefaultEgglog, NoEgglog] True
   , nativeOnlySuccessCase "haskell2010-io-normal-examples" "test/e2e/programs/haskell2010/io-normal-examples.hs" "hello\nbound\n\"quoted\"\n'X'\n\"plain\"\n[1,2,3]\n[True,False]" [DefaultEgglog, NoEgglog] True
-  , nativeOnlySuccessCaseWithInput "haskell2010-io-getline" "test/e2e/programs/haskell2010/io-getline.hs" "hegg\nlog\nunused\n" "first=hegg\nsecond=log\n7" [DefaultEgglog, NoEgglog] True
+  , nativeOnlySuccessCaseWithInput "haskell2010-io-getline" "test/e2e/programs/haskell2010/io-getline.hs" "alpha\nbeta\nunused\n" "first=alpha\nsecond=beta\n9" [DefaultEgglog, NoEgglog] True
   , nativeOnlySuccessCase "haskell2010-system-io-files" "test/haskell2010/conformance/io/system-io-files.hs" "ab\n1\n4\nbc\nFalse\nFalse\nTrue\ndef\nxyz\n11\n8\n1\n7\nTrue\nTrue\nTrue\nTrue\nTrue\nTrue\nTrue\nFalse\nTrue\nTrue\nrw\nQ" [DefaultEgglog, NoEgglog] True
   , nativeOnlySuccessCase "haskell2010-monad" "test/e2e/programs/haskell2010/monad.hs" "monad\n[11,21,12,22]\n[1,3]\n7\nmaybe fail" [DefaultEgglog, NoEgglog] True
   , nativeOnlySuccessCase "haskell2010-monad-explicit-fail" "test/e2e/programs/haskell2010/monad-explicit-fail.hs" "[]\nmaybe explicit fail\n7" [DefaultEgglog, NoEgglog] True

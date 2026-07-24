@@ -1,6 +1,6 @@
 # Benchmark Suite
 
-The benchmark suite measures representative HeggLog compiler workflows while
+The benchmark suite measures representative Haskell Compiler workflows while
 also validating their observable behavior. It is intended for release tracking
 and regression investigation, not as a conformance substitute.
 
@@ -26,12 +26,12 @@ scripts/benchmark.py --iterations 5
 Write results somewhere else:
 
 ```bash
-scripts/benchmark.py --output-dir /tmp/hegglog-benchmarks
+scripts/benchmark.py --output-dir /tmp/haskell-compiler-benchmarks
 ```
 
 ## Workloads
 
-The suite builds `exe:hegglog` once, resolves the executable with
+The suite builds `exe:haskell-compiler` once, resolves the executable with
 `cabal list-bin`, and runs these fixed workloads:
 
 - `check-fibonacci`: typecheck/validate a recursive Haskell 2010 example

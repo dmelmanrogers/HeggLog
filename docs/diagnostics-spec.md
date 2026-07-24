@@ -1,6 +1,6 @@
 # Diagnostics Specification
 
-This document describes the diagnostic format currently emitted by HeggLog's
+This document describes the diagnostic format currently emitted by Haskell Compiler's
 user-facing `.hg` compile paths and records the diagnostic requirements for the
 planned Haskell 2010 frontend.
 

@@ -31,7 +31,7 @@ REQUIRED_COMMANDS = [
 REQUIRED_ARTIFACTS = [
     ".context/coverage/summary.txt",
     ".context/coverage/html/hpc_index.html",
-    ".context/coverage/hegglog-test.tix",
+    ".context/coverage/haskell-compiler-test.tix",
     ".context/benchmarks/benchmark.json",
     ".context/benchmarks/benchmark.md",
     "dist-newstyle",

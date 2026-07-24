@@ -1,4 +1,4 @@
-# HeggLog Language Specification
+# Haskell Compiler Language Specification
 
 This document describes the strict `.hg` language implemented by the current
 compiler substrate. Future features are explicitly marked as decisions or
@@ -23,7 +23,7 @@ it is not the final source-language endpoint.
 
 ## Source Unit
 
-A HeggLog source file contains zero or more top-level first-order definitions
+A Haskell Compiler source file contains zero or more top-level first-order definitions
 followed by one main expression.
 
 Top-level definitions are ordered and nonrecursive. A definition body can refer
@@ -54,7 +54,7 @@ def let in if then else true false Int Bool
 Integer literals:
 
 - Current source syntax accepts unsigned decimal literals only.
-- The literal is typechecked against the HeggLog `Int` range.
+- The literal is typechecked against the Haskell Compiler `Int` range.
 - Negative values are expressible through checked arithmetic, for example
   `0 - 1`.
 
@@ -271,7 +271,7 @@ function as a first-class value is also outside the current LLVM fragment.
 
 ## Evaluation Order
 
-HeggLog is currently a strict, call-by-value language:
+Haskell Compiler is currently a strict, call-by-value language:
 
 - top-level definitions: evaluate in source order before the main expression.
 - `let`: evaluate the right-hand side before the body.

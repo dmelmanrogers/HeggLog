@@ -668,7 +668,7 @@
       "sourceFile": "test/haskell2010/conformance/prelude/append.hs",
       "category": "prelude",
       "expectedStatus": "native-success",
-      "expectedStdout": "[1,2,3,4]\nhegglog\n[1,2,3]\n[True,False]\nhey\nheglog\n",
+      "expectedStdout": "[1,2,3,4]\nhaskell-compiler\n[1,2,3]\n[True,False]\nhey\npresuffix\n",
       "requiredStage": "native",
       "notes": "Prelude (++) appends lists and strings and works through infix use, prefix use, and operator sections."
     },
@@ -915,8 +915,8 @@
       "sourceFile": "test/haskell2010/conformance/io/getline.hs",
       "category": "io",
       "expectedStatus": "native-success",
-      "expectedStdout": "first=hegg\nsecond=log\n7\n",
-      "stdin": "hegg\nlog\nunused\n",
+      "expectedStdout": "first=alpha\nsecond=beta\n9\n",
+      "stdin": "alpha\nbeta\nunused\n",
       "requiredStage": "native",
       "compilerModes": [
         "default",
@@ -1734,7 +1734,7 @@
         "beta"
       ],
       "env": {
-        "HEGGLOG_LIB011_ENV": "env-value"
+        "HASKELL_COMPILER_LIB011_ENV": "env-value"
       },
       "notes": "System.Environment exposes getArgs, getProgName, and getEnv through native process argv/envp behavior; missing variables surface as catchable does-not-exist IOErrors."
     },

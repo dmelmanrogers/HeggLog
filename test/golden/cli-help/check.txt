@@ -1,7 +1,7 @@
-HeggLog check mode
+Haskell Compiler check mode
 
 usage:
-  hegglog check FILE [--no-egglog] [-i PATH] [dump options]
+  haskell-compiler check FILE [--no-egglog] [-i PATH] [dump options]
 
 behavior:
   Parse, rename, typecheck, and validate Core/STG without emitting LLVM IR, invoking clang, or requiring a `main` binding.

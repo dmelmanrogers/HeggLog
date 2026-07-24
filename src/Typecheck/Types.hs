@@ -83,7 +83,7 @@ renderTypeError = \case
   IntLiteralOutOfRange value ->
     "integer literal "
       <> Text.pack (show value)
-      <> " is outside HeggLog Int range ["
+      <> " is outside Haskell Compiler Int range ["
       <> Text.pack (show HInt.minHIntInteger)
       <> ", "
       <> Text.pack (show HInt.maxHIntInteger)

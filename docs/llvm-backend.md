@@ -1,4 +1,4 @@
-# HeggLog LLVM Backend
+# Haskell Compiler LLVM Backend
 
 This document describes the LLVM/native backend for the current strict `.hg`
 compiler-supported subset. The backend emits LLVM IR and can produce native
@@ -9,7 +9,7 @@ lowering requires typed Core, an STG-like lazy IR, runtime linking, and lazy
 runtime support. The current strict backend is not sufficient for lazy Haskell
 semantics by itself.
 
-The LLVM backend is the first executable code generation path for HeggLog. It is
+The LLVM backend is the first executable code generation path for Haskell Compiler. It is
 intentionally narrow but now includes a first closure runtime pass: it compiles
 closed, pure programs with first-order roots, ordered top-level functions,
 saturated direct calls, lambda-lifted non-capturing functions, and local closure
@@ -57,7 +57,7 @@ The LLVM backend does not replace it.
 
 ## Type Mapping
 
-HeggLog types lower to backend types before LLVM:
+Haskell Compiler types lower to backend types before LLVM:
 
 - `Int` -> `BI64` -> LLVM `i64`
 - `Bool` -> `BI1` -> LLVM `i1`
@@ -90,7 +90,7 @@ Lowering uses SSA:
 - `if` lowers to then/else/join blocks with a `phi` in the join block
 - top-level functions lower to LLVM functions with typed parameters
 - direct calls lower to ordinary LLVM `call` instructions
-- closure allocation calls the generated `hegglog_alloc_process_lifetime`
+- closure allocation calls the generated `haskell_compiler_alloc_process_lifetime`
   helper, stores a code pointer plus captured fields, and aborts on allocation
   failure inside that helper
 - closure calls load the code pointer and lower to indirect LLVM calls
@@ -109,13 +109,13 @@ by `-1` before emitting `sdiv i64`; either failed check branches to `abort`.
 For `Int` roots the backend emits:
 
 ```llvm
-define i64 @hegglog_main_i64() { ... }
+define i64 @haskell_compiler_main_i64() { ... }
 ```
 
 For `Bool` roots it emits:
 
 ```llvm
-define i1 @hegglog_main_i1() { ... }
+define i1 @haskell_compiler_main_i1() { ... }
 ```
 
 It also emits:
@@ -128,11 +128,11 @@ define i32 @main() { ... }
 Programs that contain checked `+`, `-`, or `*` declare the corresponding LLVM
 overflow intrinsics and `abort`. Programs that contain checked `/` declare
 `abort`. Programs that allocate closures declare `malloc` and `abort`, define
-`hegglog_alloc_process_lifetime`, and route closure allocation through that
+`haskell_compiler_alloc_process_lifetime`, and route closure allocation through that
 process-lifetime ownership boundary.
 
 Top-level source functions emit deterministic LLVM functions named with a
-collision-free escaped form of the source name, prefixed by `hegglog_fun_`.
+collision-free escaped form of the source name, prefixed by `haskell_compiler_fun_`.
 Source parameters lower to LLVM function parameters with the same escaping
 policy, and direct calls in function bodies or the root call those generated
 functions.
@@ -150,33 +150,33 @@ format-string pointers.
 Existing report mode is unchanged:
 
 ```bash
-cabal run hegglog -- examples/test.hg
+cabal run haskell-compiler -- examples/test.hg
 ```
 
 LLVM compile mode:
 
 ```bash
-cabal run hegglog -- compile examples/llvm/arithmetic.hg --emit-llvm
-cabal run hegglog -- compile examples/llvm/arithmetic.hg --emit-llvm -o build/arithmetic.ll
-cabal run hegglog -- compile examples/llvm/arithmetic.hg --emit-llvm --no-egglog
-cabal run hegglog -- compile examples/llvm/arithmetic.hg --emit-llvm --run-llvm
+cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg --emit-llvm
+cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg --emit-llvm -o build/arithmetic.ll
+cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg --emit-llvm --no-egglog
+cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg --emit-llvm --run-llvm
 ```
 
 Native executable mode:
 
 ```bash
-cabal run hegglog -- compile examples/llvm/arithmetic.hg -o build/arithmetic
+cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg -o build/arithmetic
 ./build/arithmetic
 
-cabal run hegglog -- compile examples/llvm/arithmetic.hg -o build/arithmetic --run
-cabal run hegglog -- compile examples/llvm/division.hg -o build/division --no-egglog
+cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg -o build/arithmetic --run
+cabal run haskell-compiler -- compile examples/llvm/division.hg -o build/division --no-egglog
 ```
 
 Native builds that need external objects or libraries can pass explicit link
 inputs through to `clang`:
 
 ```bash
-cabal run hegglog -- compile Main.hs -o build/main \
+cabal run haskell-compiler -- compile Main.hs -o build/main \
   --link-object native/ffi_helpers.o \
   --library-path native \
   --link-library m
@@ -190,7 +190,7 @@ compiled or linked automatically.
 The shorthand form also works:
 
 ```bash
-cabal run hegglog -- examples/llvm/arithmetic.hg --emit-llvm
+cabal run haskell-compiler -- examples/llvm/arithmetic.hg --emit-llvm
 ```
 
 When Egglog optimization is enabled and unsupported, compile mode reports the
@@ -203,13 +203,13 @@ The compiler can either write textual LLVM IR directly or build a native
 executable by passing generated LLVM text to `clang` with an argument list:
 
 ```bash
-cabal run hegglog -- compile examples/llvm/arithmetic.hg --emit-llvm -o build/arithmetic.ll
+cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg --emit-llvm -o build/arithmetic.ll
 llvm-as build/arithmetic.ll -o build/arithmetic.bc
 lli build/arithmetic.ll
 clang build/arithmetic.ll -o build/arithmetic
 ./build/arithmetic
 
-cabal run hegglog -- compile examples/llvm/arithmetic.hg -o build/arithmetic
+cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg -o build/arithmetic
 ./build/arithmetic
 ```
 
@@ -249,7 +249,7 @@ skipped gracefully. Pure Haskell validation and textual golden tests still run.
 
 ## Integer Semantics
 
-HeggLog `Int` is a signed 64-bit integer with checked arithmetic. Source integer
+Haskell Compiler `Int` is a signed 64-bit integer with checked arithmetic. Source integer
 literals are currently unsigned decimal atoms and must fit in
 `[0, 9223372036854775807]`; out-of-range literals are rejected before code
 generation. Negative values can still be produced by checked arithmetic. The

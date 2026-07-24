@@ -1,4 +1,4 @@
-# HeggLog Runtime Specification
+# Haskell Compiler Runtime Specification
 
 This document describes the current strict `.hg` runtime behavior and the
 intended runtime direction for the Haskell 2010 native compiler target. The
@@ -13,8 +13,8 @@ the interpreter and LLVM closure-conversion path, native executable printing,
 checked arithmetic/division, and runtime-error behavior for overflow and
 division failures. Native heap allocation is now deliberately routed through
 process-lifetime allocation helpers in both LLVM backends:
-`hegglog_alloc_process_lifetime` for the strict `.hg` path and
-`hegglog_hs_alloc_process_lifetime` for the Haskell 2010 STG path. These
+`haskell_compiler_alloc_process_lifetime` for the strict `.hg` path and
+`haskell_compiler_hs_alloc_process_lifetime` for the Haskell 2010 STG path. These
 helpers abort on allocation failure and never free objects during program
 execution.
 
@@ -84,7 +84,7 @@ Implemented LLVM values:
 
 ## Int Representation
 
-HeggLog `Int` is a signed 64-bit integer with checked arithmetic.
+Haskell Compiler `Int` is a signed 64-bit integer with checked arithmetic.
 
 Range:
 
@@ -113,7 +113,7 @@ Decision needed:
 
 ## Bool Representation
 
-HeggLog `Bool` has two values:
+Haskell Compiler `Bool` has two values:
 
 ```text
 true
@@ -195,7 +195,7 @@ Decision needed:
 ## Optimization Runtime Contract
 
 Optimizers must preserve both successful results and runtime-error behavior.
-HeggLog is strict: evaluating an expression includes evaluating every enclosing
+Haskell Compiler is strict: evaluating an expression includes evaluating every enclosing
 `let` right-hand side and every condition needed to choose a branch. An
 optimization is unsound if it removes an evaluation that would have raised a
 checked integer runtime error.
@@ -246,8 +246,8 @@ declare noalias ptr @malloc(i64)
 The generated runtime keeps `malloc` behind a backend-owned allocation helper:
 
 ```llvm
-define ptr @hegglog_alloc_process_lifetime(i64 %size) { ... }
-define ptr @hegglog_hs_alloc_process_lifetime(i64 %size) { ... }
+define ptr @haskell_compiler_alloc_process_lifetime(i64 %size) { ... }
+define ptr @haskell_compiler_hs_alloc_process_lifetime(i64 %size) { ... }
 ```
 
 The helper is the current ownership boundary: allocation failure branches to
@@ -316,7 +316,7 @@ Top-level first-order functions compile to direct LLVM functions.
 
 Direct-call model:
 
-- Each top-level HeggLog function becomes an LLVM function.
+- Each top-level Haskell Compiler function becomes an LLVM function.
 - Arguments and results use backend types (`i64` for `Int`, `i1` for `Bool`).
 - Calls are direct and do not allocate.
 

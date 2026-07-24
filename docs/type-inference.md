@@ -8,7 +8,7 @@ polymorphism that the current compiler cannot specialize yet.
 
 ## Current Decision
 
-HeggLog should move toward Hindley-Milner inference incrementally. The
+Haskell Compiler should move toward Hindley-Milner inference incrementally. The
 user-facing language now permits omitted lambda parameter annotations when they
 resolve to concrete monomorphic types, while top-level signatures and
 polymorphic lets remain explicit or deferred.

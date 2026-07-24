@@ -1,6 +1,6 @@
 # Egglog Engine Specification
 
-This document describes the generic Egglog-style engine role in HeggLog.
+This document describes the generic Egglog-style engine role in Haskell Compiler.
 
 ## Engine Role
 

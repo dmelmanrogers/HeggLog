@@ -1,7 +1,7 @@
-HeggLog run mode
+Haskell Compiler run mode
 
 usage:
-  hegglog run FILE [--no-egglog] [-i PATH] [dump options] [native link options]
+  haskell-compiler run FILE [--no-egglog] [-i PATH] [dump options] [native link options]
 
 behavior:
   Compile FILE to a temporary native executable, run it, forward program stdout/stderr, and exit with the program status.
@@ -12,7 +12,7 @@ options:
   --strict-egglog
       Require Egglog optimization support instead of falling back to unoptimized output.
   --keep-intermediates
-      Preserve generated LLVM, object, and temporary executable intermediates under .context/hegglog/intermediates.
+      Preserve generated LLVM, object, and temporary executable intermediates under .context/haskell-compiler/intermediates.
   -i, --import-path PATH
       Add a Haskell 2010 source module import search directory. May be repeated; the root module directory is searched first.
   --dump-core

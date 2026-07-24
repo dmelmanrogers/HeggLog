@@ -2,8 +2,8 @@
 
 Status: complete for `REL-004`.
 
-HeggLog is installed from source with Cabal. The release-quality installation
-path installs the `hegglog` executable and verifies that the installed binary
+Haskell Compiler is installed from source with Cabal. The release-quality installation
+path installs the `haskell-compiler` executable and verifies that the installed binary
 can check, compile, and run a Haskell 2010 program.
 
 ## Prerequisites
@@ -36,7 +36,7 @@ Install to a chosen prefix:
 
 ```bash
 mkdir -p "$HOME/.local/bin"
-cabal install exe:hegglog \
+cabal install exe:haskell-compiler \
   --installdir="$HOME/.local/bin" \
   --overwrite-policy=always \
   --install-method=copy
@@ -46,7 +46,7 @@ Make sure the install directory is on `PATH`:
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
-hegglog --help
+haskell-compiler --help
 ```
 
 ## Verify The Installed Compiler
@@ -54,9 +54,9 @@ hegglog --help
 Run:
 
 ```bash
-hegglog check test/e2e/programs/haskell2010/lazy-argument.hs
-hegglog compile test/e2e/programs/haskell2010/lazy-argument.hs -o /tmp/hegglog-lazy
-/tmp/hegglog-lazy
+haskell-compiler check test/e2e/programs/haskell2010/lazy-argument.hs
+haskell-compiler compile test/e2e/programs/haskell2010/lazy-argument.hs -o /tmp/haskell-compiler-lazy
+/tmp/haskell-compiler-lazy
 ```
 
 Expected output:
@@ -73,6 +73,6 @@ The repository includes an isolated install smoke test:
 scripts/install-smoke-test.sh
 ```
 
-The script installs `hegglog` into a temporary prefix, checks the public help
+The script installs `haskell-compiler` into a temporary prefix, checks the public help
 text, typechecks a Haskell 2010 example, compiles it to a native executable, and
 verifies the executable output.

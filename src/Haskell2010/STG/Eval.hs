@@ -689,7 +689,7 @@ evalPrimitiveValues op values =
     (PrimGetArgs, []) ->
       listValue [] >>= \args -> pure (STGIO [] (STGIOSuccess args))
     (PrimGetProgName, []) ->
-      stringListValue "hegglog" >>= \program -> pure (STGIO [] (STGIOSuccess program))
+      stringListValue "haskell-compiler" >>= \program -> pure (STGIO [] (STGIOSuccess program))
     (PrimGetEnv, [nameValue]) -> do
       nameText <- stgStringText nameValue
       err <- stgDoesNotExistIOError ("environment variable not found: " <> nameText)

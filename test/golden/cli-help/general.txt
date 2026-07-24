@@ -1,14 +1,14 @@
-HeggLog compiler
+Haskell Compiler
 
 usage:
-  hegglog FILE
-  hegglog check FILE [check options]
-  hegglog emit-core FILE [emit-core options]
-  hegglog emit-stg FILE [emit-stg options]
-  hegglog report FILE [report options]
-  hegglog run FILE [run options]
-  hegglog compile FILE [compile options]
-  hegglog FILE --emit-llvm [compile options]
+  haskell-compiler FILE
+  haskell-compiler check FILE [check options]
+  haskell-compiler emit-core FILE [emit-core options]
+  haskell-compiler emit-stg FILE [emit-stg options]
+  haskell-compiler report FILE [report options]
+  haskell-compiler run FILE [run options]
+  haskell-compiler compile FILE [compile options]
+  haskell-compiler FILE --emit-llvm [compile options]
 
 commands:
   FILE
@@ -29,17 +29,17 @@ commands:
       Emit textual LLVM IR.
 
 examples:
-  cabal run hegglog -- examples/test.hg
-  cabal run hegglog -- check test/e2e/programs/haskell2010/lazy-argument.hs
-  cabal run hegglog -- check test/e2e/programs/haskell2010/lazy-argument.hs --dump-core --dump-stg
-  cabal run hegglog -- emit-core test/e2e/programs/haskell2010/lazy-argument.hs
-  cabal run hegglog -- emit-stg test/e2e/programs/haskell2010/lazy-argument.hs
-  cabal run hegglog -- report examples/test.hg
-  cabal run hegglog -- report test/e2e/programs/haskell2010/lazy-argument.hs
-  cabal run hegglog -- run test/e2e/programs/haskell2010/lazy-argument.hs
-  cabal run hegglog -- run test/e2e/programs/haskell2010/lazy-argument.hs --keep-intermediates
-  cabal run hegglog -- compile examples/llvm/arithmetic.hg -o /tmp/hegglog-arithmetic
-  cabal run hegglog -- compile examples/llvm/arithmetic.hg -o /tmp/hegglog-arithmetic --run
-  cabal run hegglog -- compile examples/llvm/arithmetic.hg --emit-llvm -o /tmp/hegglog.ll
+  cabal run haskell-compiler -- examples/test.hg
+  cabal run haskell-compiler -- check test/e2e/programs/haskell2010/lazy-argument.hs
+  cabal run haskell-compiler -- check test/e2e/programs/haskell2010/lazy-argument.hs --dump-core --dump-stg
+  cabal run haskell-compiler -- emit-core test/e2e/programs/haskell2010/lazy-argument.hs
+  cabal run haskell-compiler -- emit-stg test/e2e/programs/haskell2010/lazy-argument.hs
+  cabal run haskell-compiler -- report examples/test.hg
+  cabal run haskell-compiler -- report test/e2e/programs/haskell2010/lazy-argument.hs
+  cabal run haskell-compiler -- run test/e2e/programs/haskell2010/lazy-argument.hs
+  cabal run haskell-compiler -- run test/e2e/programs/haskell2010/lazy-argument.hs --keep-intermediates
+  cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg -o /tmp/haskell-compiler-arithmetic
+  cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg -o /tmp/haskell-compiler-arithmetic --run
+  cabal run haskell-compiler -- compile examples/llvm/arithmetic.hg --emit-llvm -o /tmp/haskell-compiler.ll
 
-run `hegglog COMMAND --help` for command-specific options.
+run `haskell-compiler COMMAND --help` for command-specific options.

@@ -2,7 +2,7 @@
 
 Status: complete for `REL-002`.
 
-HeggLog emits LLVM IR and uses the platform native toolchain for executable
+Haskell Compiler emits LLVM IR and uses the platform native toolchain for executable
 wet tests and release builds. Release-quality native validation requires these
 tools on `PATH`:
 

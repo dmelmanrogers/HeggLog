@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/hegglog-stdlib.XXXXXX")"
+tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/haskell-compiler-stdlib.XXXXXX")"
 cleanup() {
   rm -rf "$tmpdir"
 }
@@ -47,6 +47,6 @@ main = 0
 EOF
 
 printf '== standard library package import check ==\n'
-cabal run -v0 hegglog -- check "$source_file"
+cabal run -v0 haskell-compiler -- check "$source_file"
 
 printf 'standard library packaging validation passed\n'

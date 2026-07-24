@@ -1,5 +1,5 @@
 cabal-version:      3.0
-name:               hegglog
+name:               haskell-compiler
 version:            1.1.0.0
 build-type:         Simple
 license:            MIT
@@ -9,7 +9,7 @@ maintainer:         dmelmanrogers@uchicago.edu
 tested-with:        GHC == 9.10.1
 synopsis:           Small typed functional language compiler
 description:
-    HeggLog is a small typed functional language compiler in Haskell with
+    Haskell Compiler is a small typed functional language compiler in Haskell with
     parsing, typechecking, interpretation, ANF lowering, Egglog-inspired
     optimization, LLVM IR generation, and native executable compilation for
     its supported runtime fragment.
@@ -133,7 +133,7 @@ library
       Typecheck.Principal
       Typecheck.Types
 
-executable hegglog
+executable haskell-compiler
   import:           warnings
   main-is:          Main.hs
   hs-source-dirs:   app
@@ -144,7 +144,7 @@ executable hegglog
       OverloadedStrings
   build-depends:
       base >= 4.17 && < 5
-    , hegglog
+    , haskell-compiler
     , containers >= 0.6 && < 0.8
     , directory >= 1.3 && < 1.4
     , filepath >= 1.4 && < 1.6
@@ -154,7 +154,7 @@ executable hegglog
     , process >= 1.6 && < 1.7
     , text >= 2.0 && < 2.2
 
-test-suite hegglog-test
+test-suite haskell-compiler-test
   import:           warnings
   type:             exitcode-stdio-1.0
   main-is:          Main.hs
@@ -166,7 +166,7 @@ test-suite hegglog-test
       OverloadedStrings
   build-depends:
       base >= 4.17 && < 5
-    , hegglog
+    , haskell-compiler
     , containers >= 0.6 && < 0.8
     , directory >= 1.3 && < 1.4
     , filepath >= 1.4 && < 1.6
@@ -188,7 +188,7 @@ test-suite e2e-wet-test
       LambdaCase
       OverloadedStrings
   build-tool-depends:
-      hegglog:hegglog
+      haskell-compiler:haskell-compiler
   build-depends:
       base >= 4.17 && < 5
     , directory >= 1.3 && < 1.4
@@ -209,7 +209,7 @@ test-suite haskell2010-conformance-test
       LambdaCase
       OverloadedStrings
   build-tool-depends:
-      hegglog:hegglog
+      haskell-compiler:haskell-compiler
   build-depends:
       base >= 4.17 && < 5
     , aeson >= 2.1 && < 2.3

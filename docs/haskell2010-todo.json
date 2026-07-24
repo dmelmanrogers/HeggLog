@@ -4185,7 +4185,7 @@
       "milestone": "M6",
       "acceptance_criteria": [
         "Process-lifetime allocation is the implemented native runtime policy for the current strict `.hg` and Haskell 2010 executable subsets.",
-        "Strict `.hg` closure allocation routes through `hegglog_alloc_process_lifetime`; Haskell 2010 STG heap allocation routes through `hegglog_hs_alloc_process_lifetime`.",
+        "Strict `.hg` closure allocation routes through `haskell_compiler_alloc_process_lifetime`; Haskell 2010 STG heap allocation routes through `haskell_compiler_hs_alloc_process_lifetime`.",
         "Allocation failure is checked inside the runtime allocation helper and aborts; generated programs do not free or collect heap objects before process exit.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
@@ -5699,7 +5699,7 @@
       "required_tests": [
         "Haskell 2010 typechecker warning API tests",
         "Haskell 2010 native warning propagation tests",
-        "cabal test hegglog-test --test-options='--hide-successes'",
+        "cabal test haskell-compiler-test --test-options='--hide-successes'",
         "cabal test haskell2010-conformance-test --test-options='--hide-successes'",
         "python3 scripts/validate-haskell2010-todo.py"
       ],
@@ -5868,7 +5868,7 @@
         "Core recursive group assertion",
         "Core and STG evaluator oracle tests",
         "Haskell 2010 native LLVM/executable test coverage",
-        "cabal test hegglog-test --test-options='--hide-successes'"
+        "cabal test haskell-compiler-test --test-options='--hide-successes'"
       ],
       "docs": [
         "docs/full-compiler-definition.md",
@@ -10553,7 +10553,7 @@
     },
     {
       "id": "CLI-002",
-      "title": "`hegglog check`",
+      "title": "`haskell-compiler check`",
       "status": "complete",
       "category": "cli",
       "depends_on": [
@@ -10562,7 +10562,7 @@
       "blocks": [],
       "milestone": "M18",
       "acceptance_criteria": [
-        "`hegglog check` is implemented, completed, or explicitly documented according to status `complete`.",
+        "`haskell-compiler check` is implemented, completed, or explicitly documented according to status `complete`.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
@@ -10579,7 +10579,7 @@
     },
     {
       "id": "CLI-003",
-      "title": "`hegglog run`",
+      "title": "`haskell-compiler run`",
       "status": "complete",
       "category": "cli",
       "depends_on": [
@@ -10588,7 +10588,7 @@
       "blocks": [],
       "milestone": "M18",
       "acceptance_criteria": [
-        "`hegglog run` is implemented, completed, or explicitly documented according to status `complete`.",
+        "`haskell-compiler run` is implemented, completed, or explicitly documented according to status `complete`.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
@@ -10605,7 +10605,7 @@
     },
     {
       "id": "CLI-004",
-      "title": "`hegglog compile`",
+      "title": "`haskell-compiler compile`",
       "status": "complete",
       "category": "cli",
       "depends_on": [
@@ -10627,7 +10627,7 @@
       ],
       "milestone": "M18",
       "acceptance_criteria": [
-        "`hegglog compile` is implemented, completed, or explicitly documented according to status `complete`.",
+        "`haskell-compiler compile` is implemented, completed, or explicitly documented according to status `complete`.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
@@ -10644,7 +10644,7 @@
     },
     {
       "id": "CLI-005",
-      "title": "`hegglog report`",
+      "title": "`haskell-compiler report`",
       "status": "complete",
       "category": "cli",
       "depends_on": [
@@ -10653,7 +10653,7 @@
       "blocks": [],
       "milestone": "M18",
       "acceptance_criteria": [
-        "`hegglog report` emits source-aware diagnostic/status reports for legacy `.hg` and Haskell 2010 `.hs` sources.",
+        "`haskell-compiler report` emits source-aware diagnostic/status reports for legacy `.hg` and Haskell 2010 `.hs` sources.",
         "Report mode supports `--no-egglog`, `--strict-egglog`, and repeated `-i`/`--import-path` flags with scoped command diagnostics.",
         "Haskell 2010 reports parse, rename, typecheck, optimize according to flags, validate Core/STG, and render stable warnings, optimization, typed Core, and STG sections.",
         "Legacy `.hg` reports preserve parser/typechecker/interpreter/ANF/facts/rewrite/EGraph/Egglog/Core output and make strict Egglog fallback failures explicit.",
@@ -10673,7 +10673,7 @@
     },
     {
       "id": "CLI-006",
-      "title": "`hegglog emit-core`",
+      "title": "`haskell-compiler emit-core`",
       "status": "complete",
       "category": "cli",
       "depends_on": [
@@ -10682,7 +10682,7 @@
       "blocks": [],
       "milestone": "M18",
       "acceptance_criteria": [
-        "`hegglog emit-core` emits validated typed Haskell 2010 Core to stdout or `-o`/`--output` files, with `--original`, `--optimized`, `--both`, `--no-egglog`, and import-path support.",
+        "`haskell-compiler emit-core` emits validated typed Haskell 2010 Core to stdout or `-o`/`--output` files, with `--original`, `--optimized`, `--both`, `--no-egglog`, and import-path support.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
@@ -10699,7 +10699,7 @@
     },
     {
       "id": "CLI-007",
-      "title": "`hegglog emit-stg`",
+      "title": "`haskell-compiler emit-stg`",
       "status": "complete",
       "category": "cli",
       "depends_on": [
@@ -10708,7 +10708,7 @@
       "blocks": [],
       "milestone": "M18",
       "acceptance_criteria": [
-        "`hegglog emit-stg` emits validated Haskell 2010 STG to stdout or `-o`/`--output` files, with `--no-egglog` and import-path support.",
+        "`haskell-compiler emit-stg` emits validated Haskell 2010 STG to stdout or `-o`/`--output` files, with `--no-egglog` and import-path support.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
@@ -10725,7 +10725,7 @@
     },
     {
       "id": "CLI-008",
-      "title": "`hegglog emit-llvm`",
+      "title": "`haskell-compiler emit-llvm`",
       "status": "complete",
       "category": "cli",
       "depends_on": [
@@ -10734,7 +10734,7 @@
       "blocks": [],
       "milestone": "M18",
       "acceptance_criteria": [
-        "`hegglog emit-llvm` is implemented, completed, or explicitly documented according to status `complete`.",
+        "`haskell-compiler emit-llvm` is implemented, completed, or explicitly documented according to status `complete`.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
@@ -10815,8 +10815,8 @@
       "milestone": "M18",
       "acceptance_criteria": [
         "`--keep-intermediates` is accepted by compile and run and rejected by non-codegen commands with scoped diagnostics.",
-        "LLVM intermediates are preserved under `.context/hegglog/intermediates` for LLVM output modes.",
-        "Native keep mode preserves generated LLVM, object, and temporary run executable artifacts under `.context/hegglog/intermediates`.",
+        "LLVM intermediates are preserved under `.context/haskell-compiler/intermediates` for LLVM output modes.",
+        "Native keep mode preserves generated LLVM, object, and temporary run executable artifacts under `.context/haskell-compiler/intermediates`.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
@@ -11607,7 +11607,7 @@
       "milestone": "M20",
       "acceptance_criteria": [
         "Installation instructions are complete in `docs/installation.md`.",
-        "`scripts/install-smoke-test.sh` installs `hegglog` into an isolated temporary prefix and verifies the installed binary can check, compile, and run a Haskell 2010 example.",
+        "`scripts/install-smoke-test.sh` installs `haskell-compiler` into an isolated temporary prefix and verifies the installed binary can check, compile, and run a Haskell 2010 example.",
         "Install smoke, CI workflow validation, documentation links, backlog validation, and conformance matrix validation pass."
       ],
       "required_tests": [
@@ -11690,7 +11690,7 @@
       "milestone": "M20",
       "acceptance_criteria": [
         "Standard library packaging is documented in `docs/standard-library-packaging.md`.",
-        "`scripts/validate-standard-library-packaging.sh` verifies every advertised standard-library module imports through the public `hegglog check` path.",
+        "`scripts/validate-standard-library-packaging.sh` verifies every advertised standard-library module imports through the public `haskell-compiler check` path.",
         "Standard-library packaging validation, documentation links, CI workflow validation, backlog validation, and conformance matrix validation pass."
       ],
       "required_tests": [
@@ -11773,17 +11773,17 @@
       "blocks": [],
       "milestone": "M20",
       "acceptance_criteria": [
-        "scripts/coverage-report.sh runs Cabal HPC coverage for hegglog-test, verifies the HTML and .tix artifacts, copies them into .context/coverage, and writes a total summary.",
+        "scripts/coverage-report.sh runs Cabal HPC coverage for haskell-compiler-test, verifies the HTML and .tix artifacts, copies them into .context/coverage, and writes a total summary.",
         "The Cabal package exposes compiler modules through an internal library so coverage measures the library boundary instead of duplicate ad hoc source builds.",
         "CI includes a dedicated Ubuntu coverage job and scripts/release-check.sh runs coverage reporting.",
         "All affected compiler invariants remain validated by the relevant unit, conformance, and wet tests.",
         "The Haskell 2010 conformance matrix points to this task for implemented work or documented deviations."
       ],
       "required_tests": [
-        "cabal build lib:hegglog",
-        "cabal build exe:hegglog",
-        "cabal test hegglog-test --test-options='--hide-successes'",
-        "cabal test hegglog-test --enable-coverage --test-options='--hide-successes'",
+        "cabal build lib:haskell-compiler",
+        "cabal build exe:haskell-compiler",
+        "cabal test haskell-compiler-test --test-options='--hide-successes'",
+        "cabal test haskell-compiler-test --enable-coverage --test-options='--hide-successes'",
         "scripts/coverage-report.sh",
         "python3 scripts/validate-ci-matrix.py"
       ],

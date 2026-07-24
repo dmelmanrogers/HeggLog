@@ -6,11 +6,11 @@ foreign import ccall "dynamic" mkIntFun :: FunPtr (Int -> IO Int) -> Int -> IO I
 foreign import ccall "dynamic" mkPureFun :: FunPtr (Int -> Int) -> Int -> Int
 foreign import ccall "wrapper" wrapIntFun :: (Int -> IO Int) -> IO (FunPtr (Int -> IO Int))
 foreign import ccall "wrapper" wrapPureFun :: (Int -> Int) -> IO (FunPtr (Int -> Int))
-foreign import ccall "&hegglog_ffi_inc_i64" c_inc_ptr :: FunPtr (Int -> IO Int)
-foreign import ccall "&hegglog_ffi_inc_i64" c_inc_pure_ptr :: FunPtr (Int -> Int)
-foreign import ccall "hegglog_ffi_apply_i64" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int
-foreign import ccall "hegglog_ffi_apply_i64" c_apply_pure :: FunPtr (Int -> Int) -> Int -> IO Int
-foreign import ccall "hegglog_ffi_apply_twice_i64" c_apply_twice :: FunPtr (Int -> IO Int) -> Int -> IO Int
+foreign import ccall "&haskell_compiler_ffi_inc_i64" c_inc_ptr :: FunPtr (Int -> IO Int)
+foreign import ccall "&haskell_compiler_ffi_inc_i64" c_inc_pure_ptr :: FunPtr (Int -> Int)
+foreign import ccall "haskell_compiler_ffi_apply_i64" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int
+foreign import ccall "haskell_compiler_ffi_apply_i64" c_apply_pure :: FunPtr (Int -> Int) -> Int -> IO Int
+foreign import ccall "haskell_compiler_ffi_apply_twice_i64" c_apply_twice :: FunPtr (Int -> IO Int) -> Int -> IO Int
 
 callback :: Int -> IO Int
 callback value = do

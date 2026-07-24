@@ -1,6 +1,6 @@
-# HeggLog Optimizer Specification
+# Haskell Compiler Optimizer Specification
 
-This document defines the runtime-safety contract for HeggLog optimizers. It
+This document defines the runtime-safety contract for Haskell Compiler optimizers. It
 first describes optimizations valid for the current strict, checked-`Int64`
 `.hg` language, then records the Haskell 2010 Core optimizer direction.
 
@@ -24,7 +24,7 @@ obvious under all substitutions that respect the fragment types.
 
 ## Strict Evaluation
 
-HeggLog is strict:
+Haskell Compiler is strict:
 
 - A `let` right-hand side is evaluated before the body.
 - Binary primitive operands are evaluated before the primitive operation.

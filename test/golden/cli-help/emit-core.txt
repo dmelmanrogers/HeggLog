@@ -1,7 +1,7 @@
-HeggLog emit-core mode
+Haskell Compiler emit-core mode
 
 usage:
-  hegglog emit-core FILE [--no-egglog] [--original|--optimized|--both] [-i PATH] [-o PATH]
+  haskell-compiler emit-core FILE [--no-egglog] [--original|--optimized|--both] [-i PATH] [-o PATH]
 
 behavior:
   Parse, rename, typecheck, optimize when enabled, and validate Core/STG; emit typed Haskell 2010 Core without LLVM or native codegen.

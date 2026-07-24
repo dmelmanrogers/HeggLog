@@ -45,9 +45,9 @@ def main() -> None:
             fail(f"gallery references missing file {rel_path}")
 
     required_commands = [
-        "hegglog check",
-        "hegglog run",
-        "hegglog compile",
+        "haskell-compiler check",
+        "haskell-compiler run",
+        "haskell-compiler compile",
         "--import-path",
         "scripts/examples-gallery-smoke.sh",
     ]

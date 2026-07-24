@@ -5,10 +5,10 @@ import Foreign.C.Error (Errno(Errno))
 import Foreign.C.Types (CInt)
 import System.IO.Error (catch, ioeGetErrorString, ioeGetFileName)
 
-foreign import ccall "hegglog_ffi_set_errno_minus1" c_fail :: CInt -> IO CInt
-foreign import ccall "hegglog_ffi_reset_retry_count" c_reset_retry :: IO ()
-foreign import ccall "hegglog_ffi_retry_after_eintr" c_retry_after_eintr :: IO CInt
-foreign import ccall "hegglog_ffi_retry_after_eagain" c_retry_after_eagain :: IO CInt
+foreign import ccall "haskell_compiler_ffi_set_errno_minus1" c_fail :: CInt -> IO CInt
+foreign import ccall "haskell_compiler_ffi_reset_retry_count" c_reset_retry :: IO ()
+foreign import ccall "haskell_compiler_ffi_retry_after_eintr" c_retry_after_eintr :: IO CInt
+foreign import ccall "haskell_compiler_ffi_retry_after_eagain" c_retry_after_eagain :: IO CInt
 
 isMinusOne :: CInt -> Bool
 isMinusOne value = value == (0 - 1)

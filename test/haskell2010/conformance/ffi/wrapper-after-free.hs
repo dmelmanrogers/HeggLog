@@ -3,7 +3,7 @@ module Main where
 import Foreign (FunPtr, freeHaskellFunPtr)
 
 foreign import ccall "wrapper" wrapIntFun :: (Int -> IO Int) -> IO (FunPtr (Int -> IO Int))
-foreign import ccall "hegglog_ffi_apply_i64" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int
+foreign import ccall "haskell_compiler_ffi_apply_i64" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int
 
 callback :: Int -> IO Int
 callback value = return (value + 1)

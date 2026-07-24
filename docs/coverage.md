@@ -1,7 +1,7 @@
 # Coverage Reporting
 
-HeggLog coverage reporting uses Cabal's HPC integration against the internal
-`hegglog` library and the full `hegglog-test` suite. The coverage path is a
+Haskell Compiler coverage reporting uses Cabal's HPC integration against the internal
+`haskell-compiler` library and the full `haskell-compiler-test` suite. The coverage path is a
 release validation tool, not a substitute for conformance, native wet tests, or
 the release gate.
 
@@ -16,24 +16,24 @@ scripts/coverage-report.sh
 The script runs:
 
 ```bash
-cabal test hegglog-test --enable-coverage --test-options='--hide-successes'
+cabal test haskell-compiler-test --enable-coverage --test-options='--hide-successes'
 ```
 
 It then verifies that Cabal produced both:
 
 - `hpc_index.html`, the HTML coverage report
-- `hegglog-test.tix`, the raw HPC execution trace
+- `haskell-compiler-test.tix`, the raw HPC execution trace
 
 The script copies those artifacts into `.context/coverage`:
 
 - `.context/coverage/html/hpc_index.html`
-- `.context/coverage/hegglog-test.tix`
+- `.context/coverage/haskell-compiler-test.tix`
 - `.context/coverage/summary.txt`
 
 Pass a custom output directory as the first argument when needed:
 
 ```bash
-scripts/coverage-report.sh /tmp/hegglog-coverage
+scripts/coverage-report.sh /tmp/haskell-compiler-coverage
 ```
 
 ## Package Shape
@@ -41,9 +41,9 @@ scripts/coverage-report.sh /tmp/hegglog-coverage
 Coverage requires the compiler implementation to be built as a Cabal library.
 The package is therefore structured as:
 
-- `src`: the `hegglog` library modules
-- `app`: the `hegglog` executable entry point
-- `test`: the `hegglog-test` test suite, depending on the library
+- `src`: the `haskell-compiler` library modules
+- `app`: the `haskell-compiler` executable entry point
+- `test`: the `haskell-compiler-test` test suite, depending on the library
 
 This keeps coverage focused on compiler modules that users and tests exercise,
 and prevents executable/test builds from compiling ad hoc duplicate source

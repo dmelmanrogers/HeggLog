@@ -1,11 +1,11 @@
 module Main where
 
-foreign import ccall "static ffi_helpers.h hegglog_ffi_add_i64" c_add :: Int -> Int -> Int
-foreign import ccall "hegglog_ffi_reset" c_reset :: IO ()
-foreign import ccall "hegglog_ffi_accum" c_accum :: Int -> IO Int
-foreign import ccall "hegglog_ffi_current" c_current :: IO Int
-foreign import ccall "hegglog_ffi_bool_to_i64" c_bool_to_i64 :: Bool -> Int
-foreign import ccall "hegglog_ffi_next_char" c_next_char :: Char -> Char
+foreign import ccall "static ffi_helpers.h haskell_compiler_ffi_add_i64" c_add :: Int -> Int -> Int
+foreign import ccall "haskell_compiler_ffi_reset" c_reset :: IO ()
+foreign import ccall "haskell_compiler_ffi_accum" c_accum :: Int -> IO Int
+foreign import ccall "haskell_compiler_ffi_current" c_current :: IO Int
+foreign import ccall "haskell_compiler_ffi_bool_to_i64" c_bool_to_i64 :: Bool -> Int
+foreign import ccall "haskell_compiler_ffi_next_char" c_next_char :: Char -> Char
 
 main :: IO ()
 main = do

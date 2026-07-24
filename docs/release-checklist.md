@@ -1,6 +1,6 @@
 # Release Checklist
 
-This checklist is the human-facing release ledger for HeggLog. It complements
+This checklist is the human-facing release ledger for Haskell Compiler. It complements
 `scripts/release-check.sh`; it does not replace or weaken that gate.
 
 ## Preconditions
@@ -42,7 +42,7 @@ without ambiguity during release preparation.
 
 - `.context/coverage/summary.txt` exists and lists program coverage totals.
 - `.context/coverage/html/hpc_index.html` exists.
-- `.context/coverage/hegglog-test.tix` exists.
+- `.context/coverage/haskell-compiler-test.tix` exists.
 - `.context/benchmarks/benchmark.json` exists.
 - `.context/benchmarks/benchmark.md` exists.
 - Cabal source distribution artifacts are generated under `dist-newstyle`.

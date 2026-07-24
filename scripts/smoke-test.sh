@@ -40,13 +40,13 @@ fi
 
 printf '== native executable smoke tests ==\n'
 
-cabal run -v0 hegglog -- compile examples/llvm/arithmetic.hg -o /tmp/hegglog-smoke-arithmetic >/tmp/hegglog-smoke-arithmetic.build 2>&1
-[[ "$(/tmp/hegglog-smoke-arithmetic)" == "14" ]]
+cabal run -v0 haskell-compiler -- compile examples/llvm/arithmetic.hg -o /tmp/haskell-compiler-smoke-arithmetic >/tmp/haskell-compiler-smoke-arithmetic.build 2>&1
+[[ "$(/tmp/haskell-compiler-smoke-arithmetic)" == "14" ]]
 
-cabal run -v0 hegglog -- compile examples/llvm/division.hg -o /tmp/hegglog-smoke-division --no-egglog >/tmp/hegglog-smoke-division.build 2>&1
-[[ "$(/tmp/hegglog-smoke-division)" == "5" ]]
+cabal run -v0 haskell-compiler -- compile examples/llvm/division.hg -o /tmp/haskell-compiler-smoke-division --no-egglog >/tmp/haskell-compiler-smoke-division.build 2>&1
+[[ "$(/tmp/haskell-compiler-smoke-division)" == "5" ]]
 
-cabal run -v0 hegglog -- compile examples/llvm/bool-root.hg -o /tmp/hegglog-smoke-bool >/tmp/hegglog-smoke-bool.build 2>&1
-[[ "$(/tmp/hegglog-smoke-bool)" == "1" ]]
+cabal run -v0 haskell-compiler -- compile examples/llvm/bool-root.hg -o /tmp/haskell-compiler-smoke-bool >/tmp/haskell-compiler-smoke-bool.build 2>&1
+[[ "$(/tmp/haskell-compiler-smoke-bool)" == "1" ]]
 
 printf 'smoke tests passed\n'

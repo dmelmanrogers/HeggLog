@@ -1,4 +1,4 @@
-# HeggLog Egglog Backend
+# Haskell Compiler Egglog Backend
 
 This document describes the current `.hg` ANF Egglog backend. It is distinct
 from the generic Egglog kernel in [egglog-engine-spec.md](egglog-engine-spec.md)

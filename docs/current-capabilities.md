@@ -1,12 +1,12 @@
 # Current Capabilities
 
-This document describes what HeggLog can do today and separates current `.hg`
+This document describes what Haskell Compiler can do today and separates current `.hg`
 support from the active Haskell 2010 target.
 
 ## Current Native Compiler Capability
 
-The current compiler-supported source language is the strict HeggLog `.hg`
-subset. For that subset, HeggLog can:
+The current compiler-supported source language is the strict Haskell Compiler `.hg`
+subset. For that subset, Haskell Compiler can:
 
 - parse source files
 - typecheck and elaborate source
@@ -19,11 +19,11 @@ subset. For that subset, HeggLog can:
 - build native executables through `clang`
 - execute native artifacts under mandatory wet tests
 
-The `hegglog` executable now has a single normalized command parser for the
-supported top-level commands: `hegglog check FILE ...`, `hegglog run FILE
-...`, `hegglog emit-core FILE ...`, `hegglog emit-stg FILE ...`,
-`hegglog compile FILE ...`, `hegglog report FILE`, and the legacy
-`hegglog FILE` report/interpreter form.
+The `haskell-compiler` executable now has a single normalized command parser for the
+supported top-level commands: `haskell-compiler check FILE ...`, `haskell-compiler run FILE
+...`, `haskell-compiler emit-core FILE ...`, `haskell-compiler emit-stg FILE ...`,
+`haskell-compiler compile FILE ...`, `haskell-compiler report FILE`, and the legacy
+`haskell-compiler FILE` report/interpreter form.
 `check` parses, renames, typechecks, optimizes according to the selected Egglog
 mode, and validates Core/STG without LLVM or native code generation and without
 requiring a root `main` binding. `emit-core` reuses that validation pipeline and
@@ -49,7 +49,7 @@ instead of falling back to unoptimized ANF/Core for nontrivial unsupported input
 typed Core, optimized typed Core, and validated STG to stderr with stable
 section headers, keeping generated LLVM stdout and program stdout
 machine-readable. `compile` and `run` support `--keep-intermediates`, preserving
-debug artifacts under `.context/hegglog/intermediates`; native keep mode writes
+debug artifacts under `.context/haskell-compiler/intermediates`; native keep mode writes
 the generated LLVM, compiles a real object file, and links the executable from
 that object, while `run` also preserves its normally temporary executable.
 General, check, emit-core, emit-stg, run, compile, and report help are stable
@@ -64,7 +64,7 @@ values where the program root is printable.
 
 ## Current Source Language
 
-The current compiled source is the strict HeggLog `.hg` subset. It is not
+The current compiled source is the strict Haskell Compiler `.hg` subset. It is not
 Haskell 2010.
 
 Implemented `.hg` source forms:
@@ -148,7 +148,7 @@ path now emits LLVM for the current executable subset using boxed values,
 updateable and single-entry thunks, function closures, enter/apply, Bool,
 user-constructor, list, tuple, `Maybe`/`Either`/`Ordering` case dispatch,
 boxed constructor field arrays, process-lifetime heap allocation through
-`hegglog_hs_alloc_process_lifetime` under the documented no-free/no-GC
+`haskell_compiler_hs_alloc_process_lifetime` under the documented no-free/no-GC
 ownership policy, boxed `Char` values, `Eq Char` primitive lowering, scalar
 `Char` root printing, source `String` literals as ordinary list-of-`Char`
 constructor values, and checked primitive aborts, then uses the existing clang
@@ -383,7 +383,7 @@ Current tests include:
   golden, and property tests
 - native executable tests in the normal Cabal suite
 - `e2e-wet-test`, included in `cabal test all`, which invokes the built
-  `hegglog` CLI, compiles real `.hg` and executable-subset `.hs` files,
+  `haskell-compiler` CLI, compiles real `.hg` and executable-subset `.hs` files,
   checks help/error stdout and stderr discipline, checks no-codegen validation
   for `.hg` and Haskell 2010 library modules, checks `emit-core` stdout/file
   output for validated typed Haskell 2010 Core sections, checks `emit-stg`
@@ -402,7 +402,7 @@ Current tests include:
   known-constructor optimizer programs, plus line-oriented and standard-handle IO
   printing/input and recoverable IO-error programs, and compiles selected emitted LLVM through `clang`
 - `haskell2010-conformance-test`, included in `cabal test all`, which reads the
-  JSON conformance manifest, invokes the built `hegglog` executable as a
+  JSON conformance manifest, invokes the built `haskell-compiler` executable as a
   subprocess, compiles native-success cases to actual executables, executes
   those artifacts directly, compares stdout exactly, verifies runtime-error
   cases exit nonzero, verifies compile-error diagnostics, and ensures

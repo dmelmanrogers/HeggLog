@@ -2978,41 +2978,41 @@ testHaskell2010ForeignTypechecking = do
   expectForeignImportDeclaration
     "static import with Report-shaped header and default symbol"
     "module Core0 where\n\
-    \foreign import ccall \"static ffi_helpers.h\" hegglog_ffi_current :: IO Int\n\
+    \foreign import ccall \"static ffi_helpers.h\" haskell_compiler_ffi_current :: IO Int\n\
     \main :: Int\n\
     \main = 1\n"
-    "declare i64 @hegglog_ffi_current()"
+    "declare i64 @haskell_compiler_ffi_current()"
   expectForeignImportDeclaration
     "static unsigned import over Foreign.C.Types"
     "module Core0 where\n\
     \import Foreign.C.Types (CUInt)\n\
-    \foreign import ccall \"hegglog_ffi_identity_u32\" c_id_u32 :: CUInt -> IO CUInt\n\
+    \foreign import ccall \"haskell_compiler_ffi_identity_u32\" c_id_u32 :: CUInt -> IO CUInt\n\
     \main :: Int\n\
     \main = 1\n"
-    "declare i32 @hegglog_ffi_identity_u32(i32)"
+    "declare i32 @haskell_compiler_ffi_identity_u32(i32)"
   expectForeignImportDeclaration
     "static float import over Foreign.C.Types"
     "module Core0 where\n\
     \import Foreign.C.Types (CFloat)\n\
-    \foreign import ccall \"hegglog_ffi_identity_float\" c_id_float :: CFloat -> IO CFloat\n\
+    \foreign import ccall \"haskell_compiler_ffi_identity_float\" c_id_float :: CFloat -> IO CFloat\n\
     \main :: Int\n\
     \main = 1\n"
-    "declare float @hegglog_ffi_identity_float(float)"
+    "declare float @haskell_compiler_ffi_identity_float(float)"
   expectForeignImportDeclaration
     "static double import over Foreign.C.Types"
     "module Core0 where\n\
     \import Foreign.C.Types (CDouble)\n\
-    \foreign import ccall \"hegglog_ffi_identity_double\" c_id_double :: CDouble -> IO CDouble\n\
+    \foreign import ccall \"haskell_compiler_ffi_identity_double\" c_id_double :: CDouble -> IO CDouble\n\
     \main :: Int\n\
     \main = 1\n"
-    "declare double @hegglog_ffi_identity_double(double)"
+    "declare double @haskell_compiler_ffi_identity_double(double)"
   expectForeignImportDeclaration
     "static import over Haskell Float and Double"
     "module Core0 where\n\
-    \foreign import ccall \"hegglog_ffi_mix_float_double\" c_mix :: Float -> Double -> IO Int\n\
+    \foreign import ccall \"haskell_compiler_ffi_mix_float_double\" c_mix :: Float -> Double -> IO Int\n\
     \main :: Int\n\
     \main = 1\n"
-    "declare i64 @hegglog_ffi_mix_float_double(float, double)"
+    "declare i64 @haskell_compiler_ffi_mix_float_double(float, double)"
   expectForeignImportCoreSTG
     "dynamic import shape"
     (ForeignCallIR False)
@@ -3062,18 +3062,18 @@ testHaskell2010ForeignTypechecking = do
     "address import native declaration"
     "module Core0 where\n\
     \import Foreign (Ptr)\n\
-    \foreign import ccall \"&hegglog_ffi_global_i64\" c_global :: Ptr Int\n\
+    \foreign import ccall \"&haskell_compiler_ffi_global_i64\" c_global :: Ptr Int\n\
     \main :: Int\n\
     \main = 1\n"
-    "@hegglog_ffi_global_i64 = external global i8"
+    "@haskell_compiler_ffi_global_i64 = external global i8"
   expectForeignImportValueDeclaration
     "address import defaults to Haskell binder"
     "module Core0 where\n\
     \import Foreign (Ptr)\n\
-    \foreign import ccall \"&\" hegglog_ffi_global_i64 :: Ptr Int\n\
+    \foreign import ccall \"&\" haskell_compiler_ffi_global_i64 :: Ptr Int\n\
     \main :: Int\n\
     \main = 1\n"
-    "@hegglog_ffi_global_i64 = external global i8"
+    "@haskell_compiler_ffi_global_i64 = external global i8"
   expectForeignImportCoreSTG
     "opaque Foreign.C.Types names"
     ForeignImportValueIR
@@ -3252,9 +3252,9 @@ testHaskell2010ForeignPtrStablePtrTypechecking = do
     typecheckHaskell2010
       "module Core0 where\n\
       \import Foreign (Ptr, FunPtr, StablePtr, ForeignPtr, newStablePtr, deRefStablePtr, freeStablePtr, castStablePtrToPtr, castPtrToStablePtr, newForeignPtr, newForeignPtr_, addForeignPtrFinalizer, finalizeForeignPtr, withForeignPtr, touchForeignPtr)\n\
-      \foreign import ccall \"&hegglog_ffi_global_i64\" c_global :: Ptr Int\n\
-      \foreign import ccall \"&hegglog_ffi_count_i64_finalizer\" c_finalizer :: FunPtr (Ptr Int -> IO ())\n\
-      \foreign import ccall \"hegglog_ffi_read_i64_ptr\" c_read :: Ptr Int -> IO Int\n\
+      \foreign import ccall \"&haskell_compiler_ffi_global_i64\" c_global :: Ptr Int\n\
+      \foreign import ccall \"&haskell_compiler_ffi_count_i64_finalizer\" c_finalizer :: FunPtr (Ptr Int -> IO ())\n\
+      \foreign import ccall \"haskell_compiler_ffi_read_i64_ptr\" c_read :: Ptr Int -> IO Int\n\
       \stableRoundTrip :: Int -> IO Int\n\
       \stableRoundTrip value = do\n\
       \  stable <- newStablePtr value\n\
@@ -3505,7 +3505,7 @@ testHaskell2010RejectsInvalidForeignTypechecking = do
     "unknown foreign import entity"
     "module Core0 where\n\
     \import Foreign.C.Types (CInt)\n\
-    \foreign import ccall \"static ffi_helpers.txt hegglog_ffi_add_i64\" c_add :: CInt -> CInt -> CInt\n\
+    \foreign import ccall \"static ffi_helpers.txt haskell_compiler_ffi_add_i64\" c_add :: CInt -> CInt -> CInt\n\
     \main = 1\n"
   expectForeignTypeError
     "foreign export rejects invalid C identifiers"
@@ -4393,12 +4393,12 @@ testHaskell2010CoreToSTGRejectsInvalidCore =
 testHaskell2010NativeLLVMShape :: Either String ()
 testHaskell2010NativeLLVMShape = do
   llvmText <- compileHaskell2010NativeText haskell2010PartialApplicationSource
-  assertBool "native LLVM defines process-lifetime allocator" ("define ptr @hegglog_hs_alloc_process_lifetime(i64 %size)" `Text.isInfixOf` llvmText)
-  assertBool "native LLVM object allocation uses process-lifetime allocator" ("call ptr @hegglog_hs_alloc_process_lifetime(i64 48)" `Text.isInfixOf` llvmText)
+  assertBool "native LLVM defines process-lifetime allocator" ("define ptr @haskell_compiler_hs_alloc_process_lifetime(i64 %size)" `Text.isInfixOf` llvmText)
+  assertBool "native LLVM object allocation uses process-lifetime allocator" ("call ptr @haskell_compiler_hs_alloc_process_lifetime(i64 48)" `Text.isInfixOf` llvmText)
   expectEqual "native LLVM direct malloc calls stay inside allocator helper" 1 (countTextOccurrences "call ptr @malloc" llvmText)
-  assertBool "native LLVM defines lazy force runtime" ("define ptr @hegglog_hs_force" `Text.isInfixOf` llvmText)
-  assertBool "native LLVM allocates thunks" ("@hegglog_hs_make_thunk" `Text.isInfixOf` llvmText)
-  assertBool "native LLVM boxes Int results" ("@hegglog_hs_make_int" `Text.isInfixOf` llvmText)
+  assertBool "native LLVM defines lazy force runtime" ("define ptr @haskell_compiler_hs_force" `Text.isInfixOf` llvmText)
+  assertBool "native LLVM allocates thunks" ("@haskell_compiler_hs_make_thunk" `Text.isInfixOf` llvmText)
+  assertBool "native LLVM boxes Int results" ("@haskell_compiler_hs_make_int" `Text.isInfixOf` llvmText)
   assertBool "native LLVM enters closures indirectly" ("call ptr %fun_code" `Text.isInfixOf` llvmText)
 
 testHaskell2010NativeNewtypeErasure :: Either String ()
@@ -4407,14 +4407,14 @@ testHaskell2010NativeNewtypeErasure = do
   baselineText <- compileHaskell2010NativeText "module Main where\nmain = 42\n"
   expectEqual
     "native LLVM newtype data allocations match unwrapped Int baseline"
-    (countTextOccurrences "call ptr @hegglog_hs_make_data" baselineText)
-    (countTextOccurrences "call ptr @hegglog_hs_make_data" llvmText)
+    (countTextOccurrences "call ptr @haskell_compiler_hs_make_data" baselineText)
+    (countTextOccurrences "call ptr @haskell_compiler_hs_make_data" llvmText)
 
 testHaskell2010NativeCharRuntime :: Either String ()
 testHaskell2010NativeCharRuntime = do
   charRuntimeText <- compileHaskell2010NativeText haskell2010CharRuntimeSource
-  assertBool "native LLVM boxes Char literals" ("@hegglog_hs_make_char" `Text.isInfixOf` charRuntimeText)
-  assertBool "native LLVM unboxes Char values" ("@hegglog_hs_expect_char" `Text.isInfixOf` charRuntimeText)
+  assertBool "native LLVM boxes Char literals" ("@haskell_compiler_hs_make_char" `Text.isInfixOf` charRuntimeText)
+  assertBool "native LLVM unboxes Char values" ("@haskell_compiler_hs_expect_char" `Text.isInfixOf` charRuntimeText)
   assertBool "native LLVM compares unboxed Char values" ("icmp eq i32" `Text.isInfixOf` charRuntimeText)
   charMainText <- compileHaskell2010NativeText haskell2010CharMainSource
   assertBool "native LLVM has a Char main format" ("@haskell2010_fmt_char" `Text.isInfixOf` charMainText)
@@ -4422,19 +4422,19 @@ testHaskell2010NativeCharRuntime = do
 testHaskell2010NativeStringCharList :: Either String ()
 testHaskell2010NativeStringCharList = do
   llvmText <- compileHaskell2010NativeText haskell2010StringCharListSource
-  assertBool "native LLVM boxes String literal chars" ("@hegglog_hs_make_char" `Text.isInfixOf` llvmText)
-  assertBool "native LLVM converts show buffers to Char lists" ("@hegglog_hs_make_char_list_from_cstring" `Text.isInfixOf` llvmText)
+  assertBool "native LLVM boxes String literal chars" ("@haskell_compiler_hs_make_char" `Text.isInfixOf` llvmText)
+  assertBool "native LLVM converts show buffers to Char lists" ("@haskell_compiler_hs_make_char_list_from_cstring" `Text.isInfixOf` llvmText)
   assertBool "native LLVM does not emit per-literal string globals" (not ("@haskell2010_str_" `Text.isInfixOf` llvmText))
-  assertBool "native LLVM calls Char boxing for source String literals" ("call ptr @hegglog_hs_make_char" `Text.isInfixOf` llvmText)
+  assertBool "native LLVM calls Char boxing for source String literals" ("call ptr @haskell_compiler_hs_make_char" `Text.isInfixOf` llvmText)
   outputText <- compileHaskell2010NativeText haskell2010StringOutputSource
-  assertBool "native output LLVM boxes direct String literal chars" ("@hegglog_hs_make_char" `Text.isInfixOf` outputText)
+  assertBool "native output LLVM boxes direct String literal chars" ("@haskell_compiler_hs_make_char" `Text.isInfixOf` outputText)
   assertBool "native output LLVM keeps direct String literals as Char lists" (not ("@haskell2010_str_" `Text.isInfixOf` outputText))
 
 testHaskell2010NativeArithmeticSequences :: Either String ()
 testHaskell2010NativeArithmeticSequences = do
   llvmText <- compileHaskell2010NativeText haskell2010ArithmeticSequencesSource
   assertBool "native arithmetic sequences lower Char ordinals" ("zext i32" `Text.isInfixOf` llvmText)
-  assertBool "native arithmetic sequences rebox generated Chars" ("@hegglog_hs_make_char" `Text.isInfixOf` llvmText)
+  assertBool "native arithmetic sequences rebox generated Chars" ("@haskell_compiler_hs_make_char" `Text.isInfixOf` llvmText)
 
 testHaskell2010NativeNumericHierarchy :: Either String ()
 testHaskell2010NativeNumericHierarchy = do
@@ -4453,25 +4453,25 @@ testHaskell2010NativeEnumBounded :: Either String ()
 testHaskell2010NativeEnumBounded = do
   llvmText <- compileHaskell2010NativeText haskell2010EnumBoundedSource
   assertBool "native Enum emits checked Int arithmetic" ("@llvm.sadd.with.overflow.i64" `Text.isInfixOf` llvmText)
-  assertBool "native Enum/Bounded emits Char boxing" ("@hegglog_hs_make_char" `Text.isInfixOf` llvmText)
+  assertBool "native Enum/Bounded emits Char boxing" ("@haskell_compiler_hs_make_char" `Text.isInfixOf` llvmText)
 
 testHaskell2010NativeDerivedEq :: Either String ()
 testHaskell2010NativeDerivedEq = do
   llvmText <- compileHaskell2010NativeText haskell2010DerivedEqSource
   assertBool "native derived Eq emits Bool branch comparisons" ("br i1" `Text.isInfixOf` llvmText)
-  assertBool "native derived Eq keeps String fields as Char lists" ("@hegglog_hs_make_char" `Text.isInfixOf` llvmText)
+  assertBool "native derived Eq keeps String fields as Char lists" ("@haskell_compiler_hs_make_char" `Text.isInfixOf` llvmText)
 
 testHaskell2010NativeDerivedOrd :: Either String ()
 testHaskell2010NativeDerivedOrd = do
   llvmText <- compileHaskell2010NativeText haskell2010DerivedOrdSource
   assertBool "native derived Ord emits Ordering case branches" ("br i1" `Text.isInfixOf` llvmText)
-  assertBool "native derived Ord keeps String fields as Char lists" ("@hegglog_hs_make_char" `Text.isInfixOf` llvmText)
+  assertBool "native derived Ord keeps String fields as Char lists" ("@haskell_compiler_hs_make_char" `Text.isInfixOf` llvmText)
 
 testHaskell2010NativeDerivedShow :: Either String ()
 testHaskell2010NativeDerivedShow = do
   llvmText <- compileHaskell2010NativeText haskell2010DerivedShowSource
   assertBool "native derived Show emits synthesized append helpers" ("derived_ushow_uappend" `Text.isInfixOf` llvmText)
-  assertBool "native derived Show keeps String fields as Char lists" ("@hegglog_hs_make_char" `Text.isInfixOf` llvmText)
+  assertBool "native derived Show keeps String fields as Char lists" ("@haskell_compiler_hs_make_char" `Text.isInfixOf` llvmText)
 
 testHaskell2010NativeDerivedRead :: Either String ()
 testHaskell2010NativeDerivedRead = do
@@ -4502,7 +4502,7 @@ testHaskell2010NativeAppend :: Either String ()
 testHaskell2010NativeAppend = do
   llvmText <- compileHaskell2010NativeText haskell2010AppendSource
   assertBool "native Prelude append emits list case dispatch" ("case_data_match" `Text.isInfixOf` llvmText)
-  assertBool "native Prelude append keeps String values as Char lists" ("@hegglog_hs_make_char" `Text.isInfixOf` llvmText)
+  assertBool "native Prelude append keeps String values as Char lists" ("@haskell_compiler_hs_make_char" `Text.isInfixOf` llvmText)
 
 testHaskell2010NativeFoldl :: Either String ()
 testHaskell2010NativeFoldl = do
@@ -4514,7 +4514,7 @@ testHaskell2010NativePreludeFunctions :: Either String ()
 testHaskell2010NativePreludeFunctions = do
   llvmText <- compileHaskell2010NativeText haskell2010PreludeFunctionsSource
   assertBool "native Prelude function completion emits case dispatch" ("case_data_match" `Text.isInfixOf` llvmText)
-  assertBool "native Prelude function completion keeps String values as Char lists" ("@hegglog_hs_make_char" `Text.isInfixOf` llvmText)
+  assertBool "native Prelude function completion keeps String values as Char lists" ("@haskell_compiler_hs_make_char" `Text.isInfixOf` llvmText)
 
 testHaskell2010NativeUserDefinedOperators :: Either String ()
 testHaskell2010NativeUserDefinedOperators = do
@@ -4529,29 +4529,29 @@ testHaskell2010NativeFFILinkMetadata = do
   result <-
     compileHaskell2010Native
       "module Main where\n\
-      \foreign import ccall \"static ffi_helpers.h hegglog_ffi_add_i64\" c_add :: Int -> Int -> IO Int\n\
+      \foreign import ccall \"static ffi_helpers.h haskell_compiler_ffi_add_i64\" c_add :: Int -> Int -> IO Int\n\
       \exported :: Int -> Int\n\
       \exported value = value\n\
-      \foreign export ccall \"hegglog_hs_export_id\" exported :: Int -> Int\n\
+      \foreign export ccall \"haskell_compiler_hs_export_id\" exported :: Int -> Int\n\
       \main = do\n\
       \  value <- c_add 1 2\n\
       \  print value\n"
   let metadata = H2010Native.haskell2010LinkMetadata result
       llvmText = H2010Native.haskell2010LLVMText result
   expectEqual "foreign link headers" ["ffi_helpers.h"] (H2010Link.foreignLinkHeaders metadata)
-  expectEqual "foreign link import symbols" ["hegglog_ffi_add_i64"] (H2010Link.foreignLinkImportSymbols metadata)
+  expectEqual "foreign link import symbols" ["haskell_compiler_ffi_add_i64"] (H2010Link.foreignLinkImportSymbols metadata)
   expectEqual "foreign link address symbols" [] (H2010Link.foreignLinkAddressSymbols metadata)
-  expectEqual "foreign link export symbols" ["hegglog_hs_export_id"] (H2010Link.foreignLinkExportSymbols metadata)
+  expectEqual "foreign link export symbols" ["haskell_compiler_hs_export_id"] (H2010Link.foreignLinkExportSymbols metadata)
   assertBool "LLVM records foreign link header" ("; foreign link header: ffi_helpers.h" `Text.isInfixOf` llvmText)
-  assertBool "LLVM records foreign link import symbol" ("; foreign link import symbol: hegglog_ffi_add_i64" `Text.isInfixOf` llvmText)
-  assertBool "LLVM records foreign link export symbol" ("; foreign link export symbol: hegglog_hs_export_id" `Text.isInfixOf` llvmText)
+  assertBool "LLVM records foreign link import symbol" ("; foreign link import symbol: haskell_compiler_ffi_add_i64" `Text.isInfixOf` llvmText)
+  assertBool "LLVM records foreign link export symbol" ("; foreign link export symbol: haskell_compiler_hs_export_id" `Text.isInfixOf` llvmText)
 
 testHaskell2010NativeGetLine :: Either String ()
 testHaskell2010NativeGetLine = do
   llvmText <- compileHaskell2010NativeText haskell2010IOGetLineSource
-  assertBool "native IO getLine emits runtime helper" ("@hegglog_hs_getline" `Text.isInfixOf` llvmText)
+  assertBool "native IO getLine emits runtime helper" ("@haskell_compiler_hs_getline" `Text.isInfixOf` llvmText)
   assertBool "native IO getLine reads from stdin" ("declare i32 @getchar()" `Text.isInfixOf` llvmText)
-  assertBool "native IO getLine returns Char-list strings" ("call ptr @hegglog_hs_make_char(i64 %char_i64)" `Text.isInfixOf` llvmText)
+  assertBool "native IO getLine returns Char-list strings" ("call ptr @haskell_compiler_hs_make_char(i64 %char_i64)" `Text.isInfixOf` llvmText)
 
 testHaskell2010NativeListComprehensions :: Either String ()
 testHaskell2010NativeListComprehensions = do
@@ -4577,16 +4577,16 @@ testHaskell2010NativeStaticCCall = do
             pure $
               assertBool
                 "static ccall declares pure i64 helper"
-                ("declare i64 @hegglog_ffi_add_i64(i64, i64)" `Text.isInfixOf` llvmText)
+                ("declare i64 @haskell_compiler_ffi_add_i64(i64, i64)" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "static ccall declares void IO helper"
-                  ("declare void @hegglog_ffi_reset()" `Text.isInfixOf` llvmText)
+                  ("declare void @haskell_compiler_ffi_reset()" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "static ccall emits direct pure helper call"
-                  ("call i64 @hegglog_ffi_add_i64" `Text.isInfixOf` llvmText)
+                  ("call i64 @haskell_compiler_ffi_add_i64" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "static ccall emits direct void helper call"
-                  ("call void @hegglog_ffi_reset()" `Text.isInfixOf` llvmText)
+                  ("call void @haskell_compiler_ffi_reset()" `Text.isInfixOf` llvmText)
           case pureChecks of
             Left err ->
               pure (Left err)
@@ -4629,22 +4629,22 @@ testHaskell2010NativePointerAddressCCall = do
             pure $
               assertBool
                 "address import declares external data symbol"
-                ("@hegglog_ffi_global_i64 = external global i8" `Text.isInfixOf` llvmText)
+                ("@haskell_compiler_ffi_global_i64 = external global i8" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "function address import declares function pointer target"
-                  ("declare i64 @hegglog_ffi_inc_i64(i64)" `Text.isInfixOf` llvmText)
+                  ("declare i64 @haskell_compiler_ffi_inc_i64(i64)" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "pointer argument ccall uses ptr ABI"
-                  ("declare i64 @hegglog_ffi_read_i64_ptr(ptr)" `Text.isInfixOf` llvmText)
+                  ("declare i64 @haskell_compiler_ffi_read_i64_ptr(ptr)" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "pointer result ccall uses ptr ABI"
-                  ("declare ptr @hegglog_ffi_select_i64_ptr(i1)" `Text.isInfixOf` llvmText)
+                  ("declare ptr @haskell_compiler_ffi_select_i64_ptr(i1)" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "pointer runtime boxes raw addresses"
-                  ("call ptr @hegglog_hs_make_ptr(ptr @hegglog_ffi_global_i64)" `Text.isInfixOf` llvmText)
+                  ("call ptr @haskell_compiler_hs_make_ptr(ptr @haskell_compiler_ffi_global_i64)" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "foreign pointer arguments are unboxed before calls"
-                  ("call ptr @hegglog_hs_expect_ptr" `Text.isInfixOf` llvmText)
+                  ("call ptr @haskell_compiler_hs_expect_ptr" `Text.isInfixOf` llvmText)
           case pureChecks of
             Left err ->
               pure (Left err)
@@ -4690,16 +4690,16 @@ testHaskell2010NativeDynamicWrapperCCall = do
                 ("call i64 %ptr" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "wrapper import emits a callback entrypoint"
-                  ("define i64 @hegglog_hs_ffi_wrapper_" `Text.isInfixOf` llvmText)
+                  ("define i64 @haskell_compiler_hs_ffi_wrapper_" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "wrapper import stores the Haskell callback closure"
                   (" = internal global [64 x ptr] zeroinitializer" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "wrapper callback re-enters Haskell function closures"
-                  ("call ptr @hegglog_hs_expect_function" `Text.isInfixOf` llvmText)
+                  ("call ptr @haskell_compiler_hs_expect_function" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "wrapper result is boxed as a FunPtr"
-                  ("call ptr @hegglog_hs_make_ptr(ptr %wrapper_fn" `Text.isInfixOf` llvmText)
+                  ("call ptr @haskell_compiler_hs_make_ptr(ptr %wrapper_fn" `Text.isInfixOf` llvmText)
           case pureChecks of
             Left err ->
               pure (Left err)
@@ -4822,19 +4822,19 @@ testHaskell2010NativeForeignExportCCall = do
             pure $
               assertBool
                 "foreign export defines pure C entrypoint"
-                ("define i64 @hegglog_hs_export_add(i64 %arg0, i64 %arg1)" `Text.isInfixOf` llvmText)
+                ("define i64 @haskell_compiler_hs_export_add(i64 %arg0, i64 %arg1)" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "foreign export defines IO C entrypoint"
-                  ("define i64 @hegglog_hs_export_io(i64 %arg0)" `Text.isInfixOf` llvmText)
+                  ("define i64 @haskell_compiler_hs_export_io(i64 %arg0)" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "foreign export boxes C arguments"
-                  ("call ptr @hegglog_hs_make_int(i64 %arg0)" `Text.isInfixOf` llvmText)
+                  ("call ptr @haskell_compiler_hs_make_int(i64 %arg0)" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "foreign export unboxes Haskell results"
-                  ("call i64 @hegglog_hs_expect_int" `Text.isInfixOf` llvmText)
+                  ("call i64 @haskell_compiler_hs_expect_int" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "foreign export helper import is declared"
-                  ("declare i64 @hegglog_ffi_call_export_add(i64, i64)" `Text.isInfixOf` llvmText)
+                  ("declare i64 @haskell_compiler_ffi_call_export_add(i64, i64)" `Text.isInfixOf` llvmText)
           case pureChecks of
             Left err ->
               pure (Left err)
@@ -4877,16 +4877,16 @@ testHaskell2010NativeStableForeignPtrFinalizers = do
             pure $
               assertBool
                 "StablePtr creation uses runtime ownership record"
-                ("call ptr @hegglog_hs_new_stable_ptr" `Text.isInfixOf` llvmText)
+                ("call ptr @haskell_compiler_hs_new_stable_ptr" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "StablePtr dereference validates liveness"
-                  ("call ptr @hegglog_hs_deref_stable_ptr" `Text.isInfixOf` llvmText)
+                  ("call ptr @haskell_compiler_hs_deref_stable_ptr" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "ForeignPtr creation uses runtime ownership record"
-                  ("call ptr @hegglog_hs_make_foreign_ptr" `Text.isInfixOf` llvmText)
+                  ("call ptr @haskell_compiler_hs_make_foreign_ptr" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "ForeignPtr finalization calls runtime finalizer dispatch"
-                  ("call void @hegglog_hs_finalize_foreign_ptr" `Text.isInfixOf` llvmText)
+                  ("call void @haskell_compiler_hs_finalize_foreign_ptr" `Text.isInfixOf` llvmText)
                 *> assertBool
                   "ForeignPtr finalizers dispatch through function pointers"
                   ("call void %finalizer_" `Text.isInfixOf` llvmText)
@@ -5761,13 +5761,13 @@ testCLICommandModelRejectsInvalidForms =
 
 testCLICommandModelUsageText :: Either String ()
 testCLICommandModelUsageText =
-  assertBool "general usage documents compile command" ("hegglog compile FILE" `Text.isInfixOf` CommandCLI.generalUsage)
-    *> assertBool "general usage documents check command" ("hegglog check FILE" `Text.isInfixOf` CommandCLI.generalUsage)
-    *> assertBool "general usage documents emit-core command" ("hegglog emit-core FILE" `Text.isInfixOf` CommandCLI.generalUsage)
-    *> assertBool "general usage documents emit-stg command" ("hegglog emit-stg FILE" `Text.isInfixOf` CommandCLI.generalUsage)
-    *> assertBool "general usage documents run command" ("hegglog run FILE" `Text.isInfixOf` CommandCLI.generalUsage)
-    *> assertBool "general usage documents report command" ("hegglog report FILE" `Text.isInfixOf` CommandCLI.generalUsage)
-    *> assertBool "general usage documents legacy report invocation" ("hegglog FILE" `Text.isInfixOf` CommandCLI.generalUsage)
+  assertBool "general usage documents compile command" ("haskell-compiler compile FILE" `Text.isInfixOf` CommandCLI.generalUsage)
+    *> assertBool "general usage documents check command" ("haskell-compiler check FILE" `Text.isInfixOf` CommandCLI.generalUsage)
+    *> assertBool "general usage documents emit-core command" ("haskell-compiler emit-core FILE" `Text.isInfixOf` CommandCLI.generalUsage)
+    *> assertBool "general usage documents emit-stg command" ("haskell-compiler emit-stg FILE" `Text.isInfixOf` CommandCLI.generalUsage)
+    *> assertBool "general usage documents run command" ("haskell-compiler run FILE" `Text.isInfixOf` CommandCLI.generalUsage)
+    *> assertBool "general usage documents report command" ("haskell-compiler report FILE" `Text.isInfixOf` CommandCLI.generalUsage)
+    *> assertBool "general usage documents legacy report invocation" ("haskell-compiler FILE" `Text.isInfixOf` CommandCLI.generalUsage)
     *> assertBool "check usage documents no-codegen validation" ("without emitting LLVM IR" `Text.isInfixOf` CommandCLI.checkUsage)
     *> assertBool "check usage documents dump flags" ("--dump-core" `Text.isInfixOf` CommandCLI.checkUsage && "--dump-stg" `Text.isInfixOf` CommandCLI.checkUsage)
     *> assertBool "check usage documents strict egglog" ("--strict-egglog" `Text.isInfixOf` CommandCLI.checkUsage)
@@ -7678,13 +7678,13 @@ testLLVMCompileTopLevelFunctions = do
   llvmText <- compileLLVMTextNoEgglog topLevelSource
   assertBool
     "LLVM defines inc with an Int parameter"
-    ("define i64 @hegglog_fun_inc(i64 %arg_x)" `Text.isInfixOf` llvmText)
+    ("define i64 @haskell_compiler_fun_inc(i64 %arg_x)" `Text.isInfixOf` llvmText)
   assertBool
     "LLVM calls inc directly"
-    ("call i64 @hegglog_fun_inc(i64 20)" `Text.isInfixOf` llvmText)
+    ("call i64 @haskell_compiler_fun_inc(i64 20)" `Text.isInfixOf` llvmText)
   assertBool
     "LLVM calls double directly"
-    ("call i64 @hegglog_fun_double(i64 %call0)" `Text.isInfixOf` llvmText)
+    ("call i64 @haskell_compiler_fun_double(i64 %call0)" `Text.isInfixOf` llvmText)
 
 testLLVMCompileRejectsTopLevelFunctionValue :: Either String ()
 testLLVMCompileRejectsTopLevelFunctionValue =
@@ -7704,50 +7704,50 @@ testLLVMCompileEscapesTopLevelNames = do
   llvmText <- compileLLVMTextNoEgglog "def f'(x : Int) : Int = x; def f_(x : Int) : Int = x + 1; f' 42"
   assertBool
     "apostrophe is escaped distinctly"
-    ("define i64 @hegglog_fun_f_x27_(i64 %arg_x)" `Text.isInfixOf` llvmText)
+    ("define i64 @haskell_compiler_fun_f_x27_(i64 %arg_x)" `Text.isInfixOf` llvmText)
   assertBool
     "underscore is escaped distinctly"
-    ("define i64 @hegglog_fun_f_u(i64 %arg_x)" `Text.isInfixOf` llvmText)
+    ("define i64 @haskell_compiler_fun_f_u(i64 %arg_x)" `Text.isInfixOf` llvmText)
   assertBool
     "call targets escaped apostrophe function"
-    ("call i64 @hegglog_fun_f_x27_(i64 42)" `Text.isInfixOf` llvmText)
+    ("call i64 @haskell_compiler_fun_f_x27_(i64 42)" `Text.isInfixOf` llvmText)
 
 testLLVMCompileLiftedLetLambda :: Either String ()
 testLLVMCompileLiftedLetLambda = do
   llvmText <- compileLLVMTextNoEgglog "let add = \\x : Int -> \\y : Int -> x + y in add 3 4"
   assertBool
     "curried lambda chain becomes one first-order LLVM function"
-    ("define i64 @hegglog_fun__ulift_uadd_u0(i64 %arg_x, i64 %arg_y)" `Text.isInfixOf` llvmText)
+    ("define i64 @haskell_compiler_fun__ulift_uadd_u0(i64 %arg_x, i64 %arg_y)" `Text.isInfixOf` llvmText)
   assertBool
     "curried lambda call lowers directly"
-    ("call i64 @hegglog_fun__ulift_uadd_u0(i64 3, i64 4)" `Text.isInfixOf` llvmText)
+    ("call i64 @haskell_compiler_fun__ulift_uadd_u0(i64 3, i64 4)" `Text.isInfixOf` llvmText)
 
 testLLVMCompileImmediateLambda :: Either String ()
 testLLVMCompileImmediateLambda = do
   llvmText <- compileLLVMTextNoEgglog "(\\x : Int -> x * 2) 21"
   assertBool
     "anonymous lambda gets deterministic lifted function"
-    ("define i64 @hegglog_fun__ulift_ulambda_u0(i64 %arg_x)" `Text.isInfixOf` llvmText)
+    ("define i64 @haskell_compiler_fun__ulift_ulambda_u0(i64 %arg_x)" `Text.isInfixOf` llvmText)
   assertBool
     "anonymous lambda call lowers directly"
-    ("call i64 @hegglog_fun__ulift_ulambda_u0(i64 21)" `Text.isInfixOf` llvmText)
+    ("call i64 @haskell_compiler_fun__ulift_ulambda_u0(i64 21)" `Text.isInfixOf` llvmText)
 
 testLLVMCompileCapturingLambda :: Either String ()
 testLLVMCompileCapturingLambda = do
   llvmText <- compileLLVMTextNoEgglog "let x = 1 in let f = \\y : Int -> x + y in f 2"
   assertBool
     "capturing lambda gets closure code function"
-    ("define i64 @hegglog_fun__uclosure_uf_u0(ptr %arg__uenv0, i64 %arg_y)" `Text.isInfixOf` llvmText)
+    ("define i64 @haskell_compiler_fun__uclosure_uf_u0(ptr %arg__uenv0, i64 %arg_y)" `Text.isInfixOf` llvmText)
   assertBool
     "closure allocation uses process-lifetime allocator"
-    ("call ptr @hegglog_alloc_process_lifetime(i64 16)" `Text.isInfixOf` llvmText)
+    ("call ptr @haskell_compiler_alloc_process_lifetime(i64 16)" `Text.isInfixOf` llvmText)
   assertBool
     "strict LLVM defines process-lifetime allocator"
-    ("define ptr @hegglog_alloc_process_lifetime(i64 %size)" `Text.isInfixOf` llvmText)
+    ("define ptr @haskell_compiler_alloc_process_lifetime(i64 %size)" `Text.isInfixOf` llvmText)
   expectEqual "strict LLVM direct malloc calls stay inside allocator helper" 1 (countTextOccurrences "call ptr @malloc" llvmText)
   assertBool
     "closure stores code pointer"
-    ("store ptr @hegglog_fun__uclosure_uf_u0" `Text.isInfixOf` llvmText)
+    ("store ptr @haskell_compiler_fun__uclosure_uf_u0" `Text.isInfixOf` llvmText)
   assertBool
     "closure call dispatches through loaded code pointer"
     ("call i64 %closure_code" `Text.isInfixOf` llvmText)
@@ -7757,7 +7757,7 @@ testLLVMCompileInferredCapturingLambda = do
   llvmText <- compileLLVMTextNoEgglog "let x = 1 in let f = \\y -> x + y in f 2"
   assertBool
     "inferred capturing lambda gets typed closure code function"
-    ("define i64 @hegglog_fun__uclosure_uf_u0(ptr %arg__uenv0, i64 %arg_y)" `Text.isInfixOf` llvmText)
+    ("define i64 @haskell_compiler_fun__uclosure_uf_u0(ptr %arg__uenv0, i64 %arg_y)" `Text.isInfixOf` llvmText)
   assertBool
     "inferred closure call dispatches through loaded code pointer"
     ("call i64 %closure_code" `Text.isInfixOf` llvmText)
@@ -9233,12 +9233,12 @@ haskell2010NativeExecutableExamples =
 haskell2010StaticCCallSource :: Text
 haskell2010StaticCCallSource =
   "module Main where\n\
-  \foreign import ccall \"hegglog_ffi_add_i64\" c_add :: Int -> Int -> Int\n\
-  \foreign import ccall \"hegglog_ffi_reset\" c_reset :: IO ()\n\
-  \foreign import ccall \"hegglog_ffi_accum\" c_accum :: Int -> IO Int\n\
-  \foreign import ccall \"hegglog_ffi_current\" c_current :: IO Int\n\
-  \foreign import ccall \"hegglog_ffi_bool_to_i64\" c_bool_to_i64 :: Bool -> Int\n\
-  \foreign import ccall \"hegglog_ffi_next_char\" c_next_char :: Char -> Char\n\
+  \foreign import ccall \"haskell_compiler_ffi_add_i64\" c_add :: Int -> Int -> Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_reset\" c_reset :: IO ()\n\
+  \foreign import ccall \"haskell_compiler_ffi_accum\" c_accum :: Int -> IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_current\" c_current :: IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_bool_to_i64\" c_bool_to_i64 :: Bool -> Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_next_char\" c_next_char :: Char -> Char\n\
   \main = do\n\
   \  print (c_add 7 5)\n\
   \  c_reset\n\
@@ -9259,12 +9259,12 @@ haskell2010PointerAddressCCallSource :: Text
 haskell2010PointerAddressCCallSource =
   "module Main where\n\
   \import Foreign (Ptr, FunPtr)\n\
-  \foreign import ccall \"&hegglog_ffi_global_i64\" c_global :: Ptr Int\n\
-  \foreign import ccall \"&hegglog_ffi_inc_i64\" c_inc_ptr :: FunPtr (Int -> IO Int)\n\
-  \foreign import ccall \"hegglog_ffi_read_i64_ptr\" c_read :: Ptr Int -> IO Int\n\
-  \foreign import ccall \"hegglog_ffi_write_i64_ptr\" c_write :: Ptr Int -> Int -> IO ()\n\
-  \foreign import ccall \"hegglog_ffi_select_i64_ptr\" c_select :: Bool -> IO (Ptr Int)\n\
-  \foreign import ccall \"hegglog_ffi_apply_i64\" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int\n\
+  \foreign import ccall \"&haskell_compiler_ffi_global_i64\" c_global :: Ptr Int\n\
+  \foreign import ccall \"&haskell_compiler_ffi_inc_i64\" c_inc_ptr :: FunPtr (Int -> IO Int)\n\
+  \foreign import ccall \"haskell_compiler_ffi_read_i64_ptr\" c_read :: Ptr Int -> IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_write_i64_ptr\" c_write :: Ptr Int -> Int -> IO ()\n\
+  \foreign import ccall \"haskell_compiler_ffi_select_i64_ptr\" c_select :: Bool -> IO (Ptr Int)\n\
+  \foreign import ccall \"haskell_compiler_ffi_apply_i64\" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int\n\
   \main = do\n\
   \  before <- c_read c_global\n\
   \  print before\n\
@@ -9289,11 +9289,11 @@ haskell2010DynamicWrapperCCallSource =
   \foreign import ccall \"dynamic\" mkPureFun :: FunPtr (Int -> Int) -> Int -> Int\n\
   \foreign import ccall \"wrapper\" wrapIntFun :: (Int -> IO Int) -> IO (FunPtr (Int -> IO Int))\n\
   \foreign import ccall \"wrapper\" wrapPureFun :: (Int -> Int) -> IO (FunPtr (Int -> Int))\n\
-  \foreign import ccall \"&hegglog_ffi_inc_i64\" c_inc_ptr :: FunPtr (Int -> IO Int)\n\
-  \foreign import ccall \"&hegglog_ffi_inc_i64\" c_inc_pure_ptr :: FunPtr (Int -> Int)\n\
-  \foreign import ccall \"hegglog_ffi_apply_i64\" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int\n\
-  \foreign import ccall \"hegglog_ffi_apply_i64\" c_apply_pure :: FunPtr (Int -> Int) -> Int -> IO Int\n\
-  \foreign import ccall \"hegglog_ffi_apply_twice_i64\" c_apply_twice :: FunPtr (Int -> IO Int) -> Int -> IO Int\n\
+  \foreign import ccall \"&haskell_compiler_ffi_inc_i64\" c_inc_ptr :: FunPtr (Int -> IO Int)\n\
+  \foreign import ccall \"&haskell_compiler_ffi_inc_i64\" c_inc_pure_ptr :: FunPtr (Int -> Int)\n\
+  \foreign import ccall \"haskell_compiler_ffi_apply_i64\" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_apply_i64\" c_apply_pure :: FunPtr (Int -> Int) -> Int -> IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_apply_twice_i64\" c_apply_twice :: FunPtr (Int -> IO Int) -> Int -> IO Int\n\
   \callback :: Int -> IO Int\n\
   \callback value = do\n\
   \  print value\n\
@@ -9327,7 +9327,7 @@ haskell2010WrapperReclamationSource =
   "module Main where\n\
   \import Foreign (FunPtr, freeHaskellFunPtr)\n\
   \foreign import ccall \"wrapper\" wrapIntFun :: (Int -> IO Int) -> IO (FunPtr (Int -> IO Int))\n\
-  \foreign import ccall \"hegglog_ffi_apply_i64\" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_apply_i64\" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int\n\
   \callback :: Int -> IO Int\n\
   \callback value = return (value + 1)\n\
   \callback2 :: Int -> IO Int\n\
@@ -9353,7 +9353,7 @@ haskell2010WrapperAfterFreeSource =
   "module Main where\n\
   \import Foreign (FunPtr, freeHaskellFunPtr)\n\
   \foreign import ccall \"wrapper\" wrapIntFun :: (Int -> IO Int) -> IO (FunPtr (Int -> IO Int))\n\
-  \foreign import ccall \"hegglog_ffi_apply_i64\" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_apply_i64\" c_apply :: FunPtr (Int -> IO Int) -> Int -> IO Int\n\
   \callback :: Int -> IO Int\n\
   \callback value = return (value + 1)\n\
   \main = do\n\
@@ -9365,16 +9365,16 @@ haskell2010WrapperAfterFreeSource =
 haskell2010ForeignExportCCallSource :: Text
 haskell2010ForeignExportCCallSource =
   "module Main where\n\
-  \foreign import ccall \"hegglog_ffi_call_export_add\" c_call_add :: Int -> Int -> IO Int\n\
-  \foreign import ccall \"hegglog_ffi_call_export_io\" c_call_io :: Int -> IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_call_export_add\" c_call_add :: Int -> Int -> IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_call_export_io\" c_call_io :: Int -> IO Int\n\
   \exportedAdd :: Int -> Int -> Int\n\
   \exportedAdd lhs rhs = lhs + rhs\n\
   \exportedIO :: Int -> IO Int\n\
   \exportedIO value = do\n\
   \  print value\n\
   \  return (value + 7)\n\
-  \foreign export ccall \"hegglog_hs_export_add\" exportedAdd :: Int -> Int -> Int\n\
-  \foreign export ccall \"hegglog_hs_export_io\" exportedIO :: Int -> IO Int\n\
+  \foreign export ccall \"haskell_compiler_hs_export_add\" exportedAdd :: Int -> Int -> Int\n\
+  \foreign export ccall \"haskell_compiler_hs_export_io\" exportedIO :: Int -> IO Int\n\
   \main = do\n\
   \  add <- c_call_add 10 32\n\
   \  print add\n\
@@ -9389,15 +9389,15 @@ haskell2010StableForeignPtrFinalizersSource :: Text
 haskell2010StableForeignPtrFinalizersSource =
   "module Main where\n\
   \import Foreign (Ptr, FunPtr, StablePtr, ForeignPtr, newStablePtr, deRefStablePtr, freeStablePtr, castStablePtrToPtr, castPtrToStablePtr, newForeignPtr, addForeignPtrFinalizer, finalizeForeignPtr, withForeignPtr, touchForeignPtr)\n\
-  \foreign import ccall \"&hegglog_ffi_global_i64\" c_global :: Ptr Int\n\
-  \foreign import ccall \"&hegglog_ffi_count_i64_finalizer_one\" c_finalizer_one :: FunPtr (Ptr Int -> IO ())\n\
-  \foreign import ccall \"&hegglog_ffi_count_i64_finalizer_two\" c_finalizer_two :: FunPtr (Ptr Int -> IO ())\n\
-  \foreign import ccall \"hegglog_ffi_reset_finalizers\" c_reset_finalizers :: IO ()\n\
-  \foreign import ccall \"hegglog_ffi_finalizer_total_value\" c_finalizer_total :: IO Int\n\
-  \foreign import ccall \"hegglog_ffi_finalizer_order_value\" c_finalizer_order :: IO Int\n\
-  \foreign import ccall \"hegglog_ffi_expect_i64\" c_expect :: Int -> Int -> IO ()\n\
-  \foreign import ccall \"hegglog_ffi_read_i64_ptr\" c_read :: Ptr Int -> IO Int\n\
-  \foreign import ccall \"hegglog_ffi_write_i64_ptr\" c_write :: Ptr Int -> Int -> IO ()\n\
+  \foreign import ccall \"&haskell_compiler_ffi_global_i64\" c_global :: Ptr Int\n\
+  \foreign import ccall \"&haskell_compiler_ffi_count_i64_finalizer_one\" c_finalizer_one :: FunPtr (Ptr Int -> IO ())\n\
+  \foreign import ccall \"&haskell_compiler_ffi_count_i64_finalizer_two\" c_finalizer_two :: FunPtr (Ptr Int -> IO ())\n\
+  \foreign import ccall \"haskell_compiler_ffi_reset_finalizers\" c_reset_finalizers :: IO ()\n\
+  \foreign import ccall \"haskell_compiler_ffi_finalizer_total_value\" c_finalizer_total :: IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_finalizer_order_value\" c_finalizer_order :: IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_expect_i64\" c_expect :: Int -> Int -> IO ()\n\
+  \foreign import ccall \"haskell_compiler_ffi_read_i64_ptr\" c_read :: Ptr Int -> IO Int\n\
+  \foreign import ccall \"haskell_compiler_ffi_write_i64_ptr\" c_write :: Ptr Int -> Int -> IO ()\n\
   \stableRoundTrip :: Int -> IO Int\n\
   \stableRoundTrip value = do\n\
   \  stable <- newStablePtr value\n\
@@ -10163,11 +10163,11 @@ haskell2010AppendSource =
   \listAppend :: [Int]\n\
   \listAppend = [1, 2] ++ [] ++ [3, 4]\n\
   \stringAppend :: String\n\
-  \stringAppend = \"he\" ++ \"gg\" ++ \"log\"\n\
+  \stringAppend = \"haskell-\" ++ \"compiler\"\n\
   \leftSection :: String -> String\n\
   \leftSection = (\"he\" ++)\n\
   \rightSection :: String -> String\n\
-  \rightSection = (++ \"log\")\n\
+  \rightSection = (++ \"suffix\")\n\
   \main :: IO ()\n\
   \main = do\n\
   \  print listAppend\n\
@@ -10175,17 +10175,17 @@ haskell2010AppendSource =
   \  print ([1] ++ [2] ++ [3])\n\
   \  print ((++) [True] [False])\n\
   \  putStrLn (leftSection \"y\")\n\
-  \  putStrLn (rightSection \"heg\")\n\
+  \  putStrLn (rightSection \"pre\")\n\
   \  return ()\n"
 
 haskell2010AppendOutput :: Text
 haskell2010AppendOutput =
   "[1,2,3,4]\n\
-  \hegglog\n\
+  \haskell-compiler\n\
   \[1,2,3]\n\
   \[True,False]\n\
   \hey\n\
-  \heglog\n"
+  \presuffix\n"
 
 haskell2010FoldlSource :: Text
 haskell2010FoldlSource =
@@ -10557,11 +10557,11 @@ haskell2010IOGetLineSource =
 
 haskell2010IOGetLineInput :: Text
 haskell2010IOGetLineInput =
-  "hegg\nlog\nunused\n"
+  "alpha\nbeta\nunused\n"
 
 haskell2010IOGetLineOutput :: Text
 haskell2010IOGetLineOutput =
-  "first=hegg\nsecond=log\n7\n"
+  "first=alpha\nsecond=beta\n9\n"
 
 haskell2010IOGetLineEmptyOutput :: Text
 haskell2010IOGetLineEmptyOutput =

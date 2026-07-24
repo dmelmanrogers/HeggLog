@@ -2,7 +2,7 @@
 
 Status: complete for `REL-006`.
 
-This gallery points to curated examples that exercise the public HeggLog CLI.
+This gallery points to curated examples that exercise the public Haskell Compiler CLI.
 Every listed source file is committed in the repository and covered by
 `scripts/examples-gallery-smoke.sh`, conformance fixtures, wet tests, or both.
 
@@ -11,7 +11,7 @@ Every listed source file is committed in the repository and covered by
 File: `examples/haskell2010/lazy-argument.hs`
 
 ```bash
-hegglog run examples/haskell2010/lazy-argument.hs
+haskell-compiler run examples/haskell2010/lazy-argument.hs
 ```
 
 Expected output:
@@ -27,7 +27,7 @@ This demonstrates that an unused bottom-producing argument is not evaluated.
 File: `examples/haskell2010/fibonacci.hs`
 
 ```bash
-hegglog run examples/haskell2010/fibonacci.hs
+haskell-compiler run examples/haskell2010/fibonacci.hs
 ```
 
 Expected output:
@@ -41,9 +41,9 @@ Expected output:
 File: `examples/haskell2010/io-and-show.hs`
 
 ```bash
-hegglog check examples/haskell2010/io-and-show.hs
-hegglog compile examples/haskell2010/io-and-show.hs -o /tmp/hegglog-io-and-show
-/tmp/hegglog-io-and-show
+haskell-compiler check examples/haskell2010/io-and-show.hs
+haskell-compiler compile examples/haskell2010/io-and-show.hs -o /tmp/haskell-compiler-io-and-show
+/tmp/haskell-compiler-io-and-show
 ```
 
 This exercises `IO`, `do`, `return`, `(>>=)`, `putStrLn`, `print`, `Char`,
@@ -54,7 +54,7 @@ This exercises `IO`, `do`, `return`, `(>>=)`, `putStrLn`, `print`, `Char`,
 File: `examples/haskell2010/typeclass-dictionary.hs`
 
 ```bash
-hegglog run examples/haskell2010/typeclass-dictionary.hs
+haskell-compiler run examples/haskell2010/typeclass-dictionary.hs
 ```
 
 Expected output:
@@ -70,9 +70,9 @@ This exercises user class dictionaries and constrained functions.
 File: `examples/haskell2010/standard-library.hs`
 
 ```bash
-hegglog check examples/haskell2010/standard-library.hs
-hegglog compile examples/haskell2010/standard-library.hs -o /tmp/hegglog-standard-library
-/tmp/hegglog-standard-library
+haskell-compiler check examples/haskell2010/standard-library.hs
+haskell-compiler compile examples/haskell2010/standard-library.hs -o /tmp/haskell-compiler-standard-library
+/tmp/haskell-compiler-standard-library
 ```
 
 This exercises import lists from `Control.Monad`, `Data.List`, `Data.Maybe`,
@@ -86,11 +86,11 @@ Files:
 - `examples/haskell2010/modules/Lib.hs`
 
 ```bash
-hegglog compile \
+haskell-compiler compile \
   examples/haskell2010/modules/Main.hs \
   --import-path examples/haskell2010/modules \
-  -o /tmp/hegglog-modules
-/tmp/hegglog-modules
+  -o /tmp/haskell-compiler-modules
+/tmp/haskell-compiler-modules
 ```
 
 Expected output:

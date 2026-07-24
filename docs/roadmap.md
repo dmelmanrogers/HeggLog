@@ -1,11 +1,11 @@
-# HeggLog Roadmap
+# Haskell Compiler Roadmap
 
 The authoritative project roadmap is now
-[HeggLog Roadmap: Haskell 2010 Native Compiler](haskell2010-roadmap.md).
+[Haskell Compiler Roadmap: Haskell 2010 Native Compiler](haskell2010-roadmap.md).
 
 ## Active Target
 
-HeggLog is a Haskell 2010 native compiler project implemented in Haskell. The
+Haskell Compiler is a Haskell 2010 native compiler project implemented in Haskell. The
 active target is Haskell 2010 source compiled to native machine-code
 executables through LLVM and clang.
 
